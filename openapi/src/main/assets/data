@@ -1,0 +1,441 @@
+package com.openapi.utils;
+
+import android.app.Activity;
+import android.app.Application;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.PaintDrawable;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewOverlay;
+import android.view.ViewParent;
+import android.view.Window;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import org.w3c.dom.Text;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+public class MarkLayoutInflater extends LayoutInflater {
+
+    private static class MarkContextWrapper extends ContextWrapper {
+        private static final String TAG = MarkContextWrapper.class.getSimpleName();
+        private LayoutInflater mInflater = null;
+
+        public MarkContextWrapper(Context context){
+            super(context);
+        }
+
+        @Override
+        public Object getSystemService(String name) {
+            if (TextUtils.equals(Context.LAYOUT_INFLATER_SERVICE, name)){
+                if (mInflater == null){
+                    synchronized (this) {
+                        if (mInflater == null) {
+                            mInflater = new MarkLayoutInflater(this);
+                        }
+                    }
+                }
+                return mInflater;
+            }
+            return super.getSystemService(name);
+        }
+    }
+
+
+    private static final String TAG = MarkLayoutInflater.class.getSimpleName();
+    private static final String[] sClassPrefixList = {
+            "android.widget.",
+            "android.webkit.",
+            "android.app."
+    };
+
+    /**
+     * Instead of instantiating directly, you should retrieve an instance
+     * through {@link Context#getSystemService}
+     *
+     * @param context The Context in which in which to find resources and other
+     *                application-specific things.
+     * @see Context#getSystemService
+     */
+    public MarkLayoutInflater(Context context) {
+        super(context);
+    }
+
+    protected MarkLayoutInflater(LayoutInflater original, Context newContext) {
+        super(original, newContext);
+    }
+
+    /**
+     * Override onCreateView to instantiate names that correspond to the
+     * widgets known to the Widget factory. If we don't find a match,
+     * call through to our super class.
+     */
+
+    @Override
+    protected View onCreateView(String name, AttributeSet attrs) throws ClassNotFoundException {
+        for (String prefix : sClassPrefixList) {
+            try {
+                View view = createView(name, prefix, attrs);
+                if (view != null) {
+                    return view;
+                }
+            } catch (ClassNotFoundException e) {
+                // In this case we want to let the base class take a crack
+                // at it.
+            }
+        }
+
+        return super.onCreateView(name, attrs);
+    }
+
+    public LayoutInflater cloneInContext(Context newContext) {
+        return new MarkLayoutInflater(this, newContext);
+    }
+
+    @Override
+    public View inflate(int resource, @Nullable ViewGroup root, boolean attachToRoot) {
+        String layoutXmlName = getContext().getResources().getResourceName(resource);
+        layoutXmlName = layoutXmlName.replace(getContext().getPackageName() + ":layout/", "");
+        layoutXmlName = layoutXmlName.replace("android:layout/", "");
+        print(TAG, "layout xml : " + layoutXmlName + ", " + getContext());
+        View view = super.inflate(resource, root, attachToRoot);
+        view.setTag(TAG_ID, "showTag");
+        view.getOverlay().add(new TextDrawable(layoutXmlName, view));
+        return view;
+    }
+
+    private static Field getFiledInSingleClass(Class<?> clazz, String name){
+        Field field = null;
+//        try {
+//            field = clazz.getDeclaredField(name);
+//        }catch (Exception e){
+//
+//        }
+        for (Field f : clazz.getDeclaredFields()){
+            print(TAG, "f : " + f.getName());
+            if (TextUtils.equals(name, f.getName())){
+                field = f;
+            }
+        }
+        if (clazz.getSimpleName().endsWith("PhoneWindow")){
+            for(Method m : clazz.getDeclaredMethods()){
+                print(TAG, "m : " + m.getName());
+            }
+        }
+        return field;
+    }
+
+    public static Field getField(Class<?> clazz, String name) {
+        Field field = null;
+        while (clazz != null) {
+            print(TAG, "clazz : " + clazz.getSimpleName());
+            field = getFiledInSingleClass(clazz, name);
+            if (field != null){
+                break;
+            }
+            clazz = clazz.getSuperclass();
+        }
+        //print(TAG, "clazz ----- ");
+        return field;
+    }
+
+    private static int TAG_ID = 0;
+
+    public static void initial(Application application, int resouceID){
+        TAG_ID = resouceID;
+        replaceBaseContext(application);
+        application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+
+            @Override
+            public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+                print(TAG, "onActivityCreated : " + activity.getComponentName());
+                MarkLayoutInflater.replaceBaseContext(activity);
+            }
+
+            @Override
+            public void onActivityStarted(@NonNull Activity activity) {
+            }
+
+            @Override
+            public void onActivityResumed(@NonNull Activity activity) {
+                //MarkLayoutInflater.showTag(activity);
+            }
+
+            @Override
+            public void onActivityPaused(@NonNull Activity activity) {
+
+            }
+
+            @Override
+            public void onActivityStopped(@NonNull Activity activity) {
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+
+            }
+
+            @Override
+            public void onActivityDestroyed(@NonNull Activity activity) {
+            }
+        });
+
+    }
+    /*
+        LayoutInflater=LayoutInflater.from(Context)=Context.getSystemService()
+        1、替换Context中的mBase,并且重写mBase的getSystemService方法
+        2、PhoneWindow中有单独的mLayoutInflater,并且比创建时机早于Activity的onCreate方法，所以要
+          单独再次替换
+
+     */
+    public static int replaceBaseContext(Context context){
+        Class<?> clazz = context.getClass();
+        //替换Activity的mInflater
+        {
+            Field field = getField(clazz, "mInflater");
+            if (field != null){
+                field.setAccessible(true);
+                try {
+                    field.set(context, null);
+                    print(TAG, "replace mInflater : " + context);
+                }catch (Exception e){
+                    print(TAG, "replace mInflater error: " + e.toString());
+                }
+            }
+        }
+        ////替换Activity中Window的mInflater
+        {
+            Field field = getField(clazz, "mWindow");
+            if (field != null){
+                field.setAccessible(true);
+                try {
+                    Window window = (Window)field.get(context);
+                    Field winFiled = getField(window.getClass(), "mLayoutInflater");
+                    if (winFiled != null){
+                        winFiled.setAccessible(true);
+                        winFiled.set(window, new MarkLayoutInflater(context));
+                        print(TAG, "replace window mInflater : " + context);
+                    }
+                }catch (Exception e){
+                    print(TAG, "replace mInflater error: " + e.toString());
+                }
+            }
+        }
+
+        //替换Context中的mBase
+        {
+            Field field = getField(clazz, "mBase");
+            if (field != null){
+                field.setAccessible(true);
+                try {
+                    Context baseContext = (Context)field.get(context);
+                    field.set(context, new MarkContextWrapper(baseContext));
+                }catch (Exception e){
+                    print(TAG, "replace mBase error: " + e.toString());
+                }
+            }
+        }
+
+
+        return 0;
+
+    }
+
+    public static class Config{
+        private int mTextSize = 21;
+
+        public Config setTextSize(int size){
+            mTextSize = size;
+            return this;
+        }
+
+        public int getTextSize(){
+            return mTextSize;
+        }
+
+    }
+
+    private static Config sConfig = new Config();
+
+    private static class TextDrawable extends PaintDrawable {
+        private View mView = null;
+        private String mText = "";
+        public int h = 0;
+        public int w = 0;
+
+        public TextDrawable(String text, View view){
+            mText = text;
+            mView = view;
+            init();
+        }
+
+        private void init(){
+            Paint paint = new Paint();//防止锯齿
+            int textSize = sConfig.getTextSize();
+            paint.setTextSize(textSize);
+            Paint.FontMetricsInt fontMetrics = paint.getFontMetricsInt();
+            h = fontMetrics.bottom-fontMetrics.top;
+
+            //2.用bounds计算宽度
+            Rect bounds = new Rect();
+            paint.getTextBounds(mText, 0, mText.length(), bounds);
+            w = bounds.right-bounds.left;
+        }
+
+
+        @Override
+        public void draw(@NonNull Canvas canvas) {
+            if (!isInContentView(mView)){
+                mView.setTag(TAG_ID, "");
+                return;
+            }
+
+            int marginTop = getMarginTop(mView);
+            int x = 0;
+            int y = 0;
+
+            y += marginTop;
+
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);//防止锯齿
+            paint.setTextAlign(Paint.Align.LEFT);  //从右边开始draw
+            int textSize = sConfig.getTextSize();
+            paint.setTextSize(textSize);
+            paint.setColor(0xffffffff);
+            RectF rect = new RectF(x, y, x + w, y + h - 2);
+            canvas.drawRect(rect, paint);
+
+            paint.setColor(0xff000000);
+            canvas.drawText(mText, x, y + h - 5, paint);
+        }
+
+        private int getMarginTop(View view){
+            int margin = 0;
+            View top = getFirstTagParent(view);
+            if (top == null){
+                return 0;
+            }
+
+            int[] parentloc = new int[2];
+            top.getLocationInWindow(parentloc);
+
+            int[] childloc = new int[2];
+            view.getLocationInWindow(childloc);
+
+            int rest = childloc[1] - parentloc[1] - getMarginTop(top);
+
+            margin = rest > h ? 0 : (h - rest);
+
+            Drawable drawable = top.getForeground();
+            if (drawable != null){
+                int w = ((TextDrawable)drawable).w;
+                int ret = childloc[0] - parentloc[0];
+                if (ret > w){
+                    return 0;
+                }
+            }
+
+            return margin;
+        }
+    }
+
+
+    private static boolean isInContentView(View view){
+        boolean ret = false;
+        if (view.getId() == android.R.id.content){
+            return true;
+        }
+
+        ViewParent parent = view.getParent();
+        while (parent != null){
+            if (parent instanceof View){
+               int id=  ((View)parent).getId();
+               if (id == android.R.id.content){
+                   ret = true;
+                   break;
+               }
+            }
+            parent = parent.getParent();
+        }
+        return ret;
+    }
+    private static View getFirstTagParent(View view){
+        View result = null;
+        ViewParent parent = view.getParent();
+        while(parent != null){
+             if (parent instanceof View) {
+                 String tag = (String)((View)parent).getTag(TAG_ID);
+                 if (TextUtils.equals("showTag", tag)) {
+                     result = (View) parent;
+                     break;
+                 }
+             }
+             parent = parent.getParent();
+        }
+
+        return result;
+    }
+
+
+    private static boolean DEBUG = false;
+    public static void setDebug(boolean isDebug){
+        DEBUG = isDebug;
+    }
+
+    private static void print(String tag, String log){
+        if (DEBUG) {
+            Log.d(TAG, log);
+        }
+    }
+
+    public static void setConfig(Config config){
+        sConfig = config;
+    }
+
+
+
+}
+
+
+
+gradle.taskGraph.afterTask { task ->
+    boolean ret =  false
+    if (task.getName() == "assembleDebug"){
+        ret = true
+    }else if (task.getName() == "assembleRelease"){
+        ret = true
+    }
+
+    if (ret){
+        println task.getName()
+        String type = 'release'
+        String path = String.format("%s/build/intermediates/aar_main_jar/%s/classes.jar",projectDir.absolutePath, type)
+        println path
+        println new File(path).exists()
+        String newPath = getProjectDir().absolutePath + "/sdk"
+        println newPath
+
+
+        copy {
+            println "copy..."
+            from path into newPath
+        }
+
+        new File(newPath + "/classes.jar").renameTo(newPath + "/" + project.name + ".jar")
+
+    }
+}
+

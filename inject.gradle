@@ -1,0 +1,24 @@
+/******inject***********/
+buildscript {
+    repositories {
+        maven {
+            String homeDir = System.getenv("HOME") + "/plugin/inject"
+            url "file:$homeDir"//双引号才行
+        }
+    }
+
+    dependencies {
+        classpath 'com.open.utils:class-injector:1.0'
+    }
+}
+
+def size = rootProject.buildscript.getRepositories().size()
+for (int i = 0; i < size; ++i) {
+    println rootProject.buildscript.getRepositories().get(i).getName()
+}
+
+project("app") {
+    apply plugin: 'com.android.application'
+    apply plugin: 'ClassInject'
+}
+/******inject***********/

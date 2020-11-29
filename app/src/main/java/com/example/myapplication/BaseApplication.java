@@ -1,0 +1,27 @@
+package com.example.myapplication;
+
+import android.app.Application;
+import android.app.Instrumentation;
+import android.content.Context;
+
+import com.openapi.comm.utils.WorkHandler;
+import com.openapi.multitheme.MultiTheme;
+import com.openapi.multitheme.MultiThemeSDK;
+
+//import com.openapi.utils.MarkLayoutInflater;
+
+public class BaseApplication extends Application {
+    private static Context sContext;
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        sContext = this;
+        WorkHandler.init();
+        MultiThemeSDK.getInstance().initial(this);
+    }
+
+    public static Context getApp(){
+        return sContext;
+    }
+
+}
