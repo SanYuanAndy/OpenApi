@@ -1,0 +1,6 @@
+include ':comm'
+include ':multitheme'
+//include ':inject'
+//include ':openapi'
+include ':app'
+rootProject.name = "OpenApi"

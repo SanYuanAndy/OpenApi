@@ -1,0 +1,16 @@
+//apply plugin: 'ClassInject'
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        maven {
+            String homeDir = System.getenv("HOME") + "/plugin/inject"
+            String sUrl = String.format("file:%s", homeDir)
+            url sUrl
+        }
+    }
+
+    dependencies {
+        classpath 'com.open.utils:class-injector:1.0'
+    }
+}

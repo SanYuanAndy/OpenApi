@@ -1,0 +1,59 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        minSdkVersion 23
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+}
+
+gradle.taskGraph.afterTask { task ->
+            int ret =  0
+            if (task.getName() == "assembleDebug"){
+                ret = 1
+            }else if (task.getName() == "assembleRelease"){
+                ret = 2
+            }
+
+            if (ret > 0){
+                println task.getName()
+                String type = ret == 1 ? 'debug' : 'release'
+                String path = String.format("%s/build/intermediates/aar_main_jar/%s/classes.jar",projectDir.absolutePath, type)
+                println path
+                println new File(path).exists()
+                String newPath = getProjectDir().absolutePath + "/sdk/" + type
+                println newPath
+
+
+                copy {
+                    println "copy..."
+                    from path into newPath
+                }
+
+        new File(newPath + "/classes.jar").renameTo(newPath + "/" + project.name + ".jar")
+
+    }
+}
