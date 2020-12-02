@@ -1,5 +1,6 @@
 package com.openapi.multitheme;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.res.ColorStateList;
@@ -13,6 +14,7 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,7 +25,11 @@ import com.openapi.comm.utils.LogUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MultiTheme {
 
@@ -106,33 +112,58 @@ public class MultiTheme {
     }
 
     public static class  LayoutInflaterFactory implements LayoutInflater.Factory2 {
-        private static List<LayoutInflaterFactory> factories = new ArrayList<>();
+        private static Map<Context, LayoutInflaterFactory> factories = new HashMap();
+        private static Window sCurrWindow;
 
         private LayoutInflater mLayoutInflater = null;
+        private static Set<View> mTopViews = new HashSet<View>();
 
         private LayoutInflaterFactory(LayoutInflater inflater) {
             mLayoutInflater = inflater;
         }
-        private View mTopView;
 
         public static LayoutInflaterFactory create(LayoutInflater inflater) {
             LayoutInflaterFactory inflaterFactory = new LayoutInflaterFactory(inflater);
-            factories.add(inflaterFactory);
+            factories.put(inflater.getContext(), inflaterFactory);
             return inflaterFactory;
         }
 
+        public static void destroyFactory(Context context) {
+            factories.remove(context);
+        }
+
         public static void onThemeChanged() {
-            for (LayoutInflaterFactory factory : factories) {
-                factory.onRefreshTheme();
+            for (View view : mTopViews) {
+                if (view == null) {
+                    continue;
+                }
+                if (view.getWindowVisibility() != View.VISIBLE) {
+                    continue;
+                }
+
+                view = view.getRootView();
+                view.dispatchWindowFocusChanged(view.hasWindowFocus());
             }
         }
-        private void onRefreshTheme() {
-            View view = mTopView;
-            if (view != null) {
-                boolean hasFocus = view.hasWindowFocus();
-                view.dispatchWindowFocusChanged(hasFocus);
-            }
+
+        private void addTopView(final View view) {
+            view.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View v) {
+                    LogUtil.d(TAG, "Attach:" + v);
+                    mTopViews.add(view);
+                    LogUtil.d(TAG, "top view size : " + mTopViews.size());
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View v) {
+                    LogUtil.d(TAG, "Detach:" + v);
+                    mTopViews.remove(view);
+                    LogUtil.d(TAG, "top view size : " + mTopViews.size());
+                }
+            });
         }
+
 
         @Override
         public View onCreateView(@NonNull String name, @NonNull Context context, @NonNull AttributeSet attrs) {
@@ -141,7 +172,7 @@ public class MultiTheme {
 
         @Override
         public View onCreateView(@Nullable final View parent, @NonNull String name, @NonNull Context context, @NonNull AttributeSet attrs) {
-            // LogUtil.d(TAG, "parent:" + parent + ", view:" + name);
+            LogUtil.d(TAG, "parent:" + parent + ", view:" + name);
             View view = null;
             try {
                 view = mLayoutInflater.onCreateView(context, parent, name, attrs);
@@ -149,8 +180,8 @@ public class MultiTheme {
 
             }
 
-            if (parent ==  null) {
-                mTopView = view;
+            if (view.getId() == android.R.id.content) {
+                addTopView(view);
             }
 
             Resources resources = mLayoutInflater.getContext().getResources();

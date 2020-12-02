@@ -1,6 +1,7 @@
 package com.example.myapplication;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
 
@@ -17,8 +18,23 @@ public class MainActivity extends Activity {
 
     int mIndex = 0;
     public void onThemeChange(View view) {
+        onThemeChange();
+    }
+
+    public void onShowDialog(View view) {
+        showDialog();
+    }
+
+    public void showDialog() {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_main);
+        dialog.show();
+    }
+
+    private void onThemeChange() {
         mIndex++;
         mIndex = mIndex % 3;
         MultiThemeSDK.getInstance().refreshTheme(mIndex);
     }
+
 }
