@@ -15,14 +15,6 @@
         android:onClick="onThemeChange"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="12dp"/>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="弹窗"
-        android:textColor="@color/theme_main_text_color"
-        android:onClick="onShowDialog"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp"/>
     <ImageView
         android:id="@+id/icon0"
         android:background="#ffffffff"

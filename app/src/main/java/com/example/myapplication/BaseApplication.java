@@ -17,7 +17,7 @@ public class BaseApplication extends Application {
         super.onCreate();
         sContext = this;
         WorkHandler.init();
-        MultiThemeSDK.getInstance().initial(this);
+        MultiThemeSDK.getInstance().initial(this, 0);
     }
 
     public static Context getApp(){
