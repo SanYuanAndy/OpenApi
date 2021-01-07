@@ -180,6 +180,10 @@ public class MultiTheme {
 
             }
 
+            if (view == null) {
+                return null;
+            }
+
             if (view.getId() == android.R.id.content) {
                 addTopView(view);
             }
