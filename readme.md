@@ -1,4 +1,7 @@
-#多主题
+#换肤多主题方案
+
+##代码路径
+https://github.com/SanYuanAndy/OpenApi.git
 
 ##代码结构
 1、多主题实现代码在multitheme模块；
@@ -26,6 +29,26 @@
                       主题0,  theme_image.png;
                       主题1,  theme_image_1.png;
                       主题2,  theme_image_2.png;
+
+
+#方案关键点
+##设置LayoutInflater的自定义Factory
+    void setFactory2(Factory2 factory)
+    目的:自定义onCreateView方法
+
+##Window的dispatchWindowFocusChanged
+  1、避免重新保存所有需要支持换肤的view
+  2、利用安卓原生的层级调用
+
+##MultiThemeDrawable
+   使用自定义的Drawable,实现类似多状态Drawable的功能, 主题发生变化的时候触发自定义的Drawable重绘。
+
+##目前的问题
+1、未适配Android6.0
+2、暂时仅支持文字颜色、背景颜色、背景图片、ImageView内容图片换肤，其他的需要继续开发
+3、替换资源的时候，由于使用了一次循环遍历，有一定的性能消耗。
+
+
 
 
 
