@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.openapi.ipc">
+    <application>
+        <provider
+            android:authorities="com.openapi.provider"
+            android:name=".IPCProvider"
+            android:process=":provider"/>
+    </application>
+</manifest>

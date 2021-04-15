@@ -1,8 +1,7 @@
 apply plugin: "com.android.application"
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.3"
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId "com.open.utils.case.all"
@@ -14,15 +13,36 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+
+        machine {
+            storeFile file('keystore/machine.keystore')
+            println "${STOREPASSWORD}"
+            storePassword "${STOREPASSWORD}"
+            keyAlias "${KEYALIAS}"
+            keyPassword "${KEYPASSWORD}"
+        }
+    }
+
 
     buildTypes {
 
         debug {
             minifyEnabled false
+
+            File f = new File("app/keystore/machine.keystore")
+            if (f.exists()) {
+                signingConfig signingConfigs.machine
+            }
+
         }
 
         release {
             minifyEnabled false
+            File f = new File("app/keystore/machine.keystore")
+            if (f.exists()) {
+                signingConfig signingConfigs.machine
+            }
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -41,6 +61,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation project(":multitheme")
     implementation project(":comm")
+    implementation project(':ipc')
 }
 
 gradle.taskGraph.beforeTask { task ->
