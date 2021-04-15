@@ -3,6 +3,8 @@ apply plugin: "com.android.application"
 android {
     compileSdkVersion 28
 
+    boolean needReleaseSign = parseBoolean("${NeedReleaseSign}")
+
     defaultConfig {
         applicationId "com.open.utils.case.all"
         minSdkVersion 19
@@ -17,7 +19,6 @@ android {
 
         machine {
             storeFile file('keystore/machine.keystore')
-            println "${STOREPASSWORD}"
             storePassword "${STOREPASSWORD}"
             keyAlias "${KEYALIAS}"
             keyPassword "${KEYPASSWORD}"
@@ -31,7 +32,8 @@ android {
             minifyEnabled false
 
             File f = new File("app/keystore/machine.keystore")
-            if (f.exists()) {
+            if (f.exists() && needReleaseSign) {
+                println "NeedReleaseSign"
                 signingConfig signingConfigs.machine
             }
 
@@ -40,7 +42,8 @@ android {
         release {
             minifyEnabled false
             File f = new File("app/keystore/machine.keystore")
-            if (f.exists()) {
+            if (f.exists() && needReleaseSign) {
+                println "NeedReleaseSign"
                 signingConfig signingConfigs.machine
             }
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -75,4 +78,14 @@ gradle.taskGraph.beforeTask { task ->
         // options.compilerArgs << '-Xbootclasspath/p:app/libs/framework.jar'
     }
 
+}
+
+def boolean parseBoolean(String value) {
+    boolean ret = false;
+    try {
+        ret = Boolean.parseBoolean(value);
+    } catch(Exception e) {
+
+    }
+    return ret;
 }
