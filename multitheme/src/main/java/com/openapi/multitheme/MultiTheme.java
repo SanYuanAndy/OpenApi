@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -22,7 +23,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.openapi.comm.utils.LogUtil;
+import com.openapi.comm.utils.ReflectUtils;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -114,12 +117,21 @@ public class MultiTheme {
     public static class  LayoutInflaterFactory implements LayoutInflater.Factory2 {
         private static Map<Context, LayoutInflaterFactory> factories = new HashMap();
         private static Window sCurrWindow;
+        private Method mOnCreateViewMethod = null;
 
         private LayoutInflater mLayoutInflater = null;
         private static Set<View> mTopViews = new HashSet<View>();
 
         private LayoutInflaterFactory(LayoutInflater inflater) {
             mLayoutInflater = inflater;
+
+            Class<?>[] paramsType = new Class<?>[] {View.class, String.class, AttributeSet.class};
+            try {
+                mOnCreateViewMethod = LayoutInflater.class.getDeclaredMethod("onCreateView", paramsType);
+                mOnCreateViewMethod.setAccessible(true);
+            } catch (Exception e) {
+
+            }
         }
 
         public static LayoutInflaterFactory create(LayoutInflater inflater) {
@@ -175,9 +187,17 @@ public class MultiTheme {
             LogUtil.d(TAG, "parent:" + parent + ", view:" + name);
             View view = null;
             try {
-                view = mLayoutInflater.onCreateView(context, parent, name, attrs);
+                if (-1 == name.indexOf('.')) {
+                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                        view = mLayoutInflater.onCreateView(context, parent, name, attrs);
+                    } else {
+                        view = (View) mOnCreateViewMethod.invoke(mLayoutInflater, parent, name, attrs);
+                    }
+                } else {
+                    view = mLayoutInflater.createView(name, null, attrs);
+                }
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
 
             if (view == null) {
