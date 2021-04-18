@@ -19,6 +19,7 @@ public class IPCProvider extends EmptyContentProvider {
                 String strServiceName = extras.getString("service_name");
                 Bundle b = new Bundle();
                 b.putBinder("binder", new Binder());
+                b.putBoolean("ret", true);
                 return b;
             }
         });

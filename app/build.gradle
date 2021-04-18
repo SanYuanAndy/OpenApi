@@ -65,6 +65,8 @@ dependencies {
     implementation project(":multitheme")
     implementation project(":comm")
     implementation project(':ipc')
+    implementation project(':debugger')
+
 }
 
 gradle.taskGraph.beforeTask { task ->
