@@ -37,4 +37,8 @@ public class MainActivity extends Activity {
         MultiThemeSDK.getInstance().refreshTheme(mIndex);
     }
 
+    public static String getDebugLabel() {
+        return "MultiTheme";
+    }
+
 }
