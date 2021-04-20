@@ -4,14 +4,17 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Toast;
 
 public class DataManager {
     private static DataManager sInstance = new DataManager();
     private Context mContext = null;
+    private Handler mUiHandler = null;
 
     private DataManager() {
-
+        mUiHandler = new Handler(Looper.getMainLooper());
     }
 
     void init(Application context) {
@@ -40,8 +43,14 @@ public class DataManager {
         return sp.getString(key, defValue);
     }
 
-    public void showToast(String content) {
-        Toast.makeText(mContext, content, Toast.LENGTH_SHORT);
+    public void showToast(final String text) {
+        mUiHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
+            }
+        }, 0);
+
     }
 
 }

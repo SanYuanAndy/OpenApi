@@ -8,12 +8,11 @@
     <uses-permission
         android:name="android.permission.ACCESS_MOCK_LOCATION"
         tools:ignore="MockLocation" />
-    /
 
     <application>
         <receiver android:name="com.openapi.mocklocation.MockReceiver" >
             <intent-filter>
-                <action android:name="com.open.location.start"></action>
+                <action android:name="${BOOT_ACTION}"></action>
                 <action android:name="com.open.mock.cmd"/>
             </intent-filter>
         </receiver>

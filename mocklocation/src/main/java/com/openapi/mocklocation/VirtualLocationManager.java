@@ -36,7 +36,7 @@ public class VirtualLocationManager {
 
     public void onReceive(Context context, Intent intent) {
         Log.e(TAG, "onReceive:" + intent);
-        int opt = intent.getIntExtra("opt", 0);
+        int opt = intent.getIntExtra("opt", -1);
         if (opt == 1) {
             String lat = intent.getStringExtra("lat");
             String lon = intent.getStringExtra("lng");
@@ -145,6 +145,8 @@ public class VirtualLocationManager {
         locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
         locationManager.addTestProvider(PROVIDER_NAME, true, false, false, false, true, true, true, Criteria.POWER_HIGH, Criteria.ACCURACY_FINE);
         locationManager.setTestProviderEnabled(PROVIDER_NAME, true);
+
+        DataManager.getInstance().showToast("start mock location");
 
         for (; mCount < 2000; mCount++) {
             Location newLocation = new Location(LocationManager.GPS_PROVIDER);
