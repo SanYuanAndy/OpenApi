@@ -3,7 +3,7 @@ apply plugin: "com.android.application"
 android {
     compileSdkVersion 28
 
-    boolean needReleaseSign = parseBoolean("${NeedReleaseSign}")
+    boolean needReleaseSign = getProperty("NeedReleaseSign", false)
 
     defaultConfig {
         applicationId "com.open.utils.case.all"
@@ -13,6 +13,9 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        String sAction = getProperty("BootAction", "android.intent.action.BOOT_COMPLETED")
+        manifestPlaceholders += [BOOT_ACTION:sAction]
     }
 
     signingConfigs {
@@ -92,4 +95,38 @@ def boolean parseBoolean(String value) {
 
     }
     return ret;
+}
+
+def getProperty(String key, Object defaultValue) {
+    Object obj = null
+    if (!hasProperty(key)) {
+        return defaultValue
+    }
+
+    obj = getProperty(key)
+    Object ret = defaultValue
+
+    switch (defaultValue.class.hashCode()) {
+        case Boolean.class.hashCode():
+        case boolean.class.hashCode():
+            try {
+                ret = Boolean.parseBoolean(obj);
+            } catch(Exception e) {
+
+            }
+            break
+        case Integer.class.hashCode():
+        case int.class.hashCode():
+            try {
+                ret = Integer.parseInt(obj);
+            } catch(Exception e) {
+
+            }
+            break
+        default:
+            ret = obj
+    }
+
+    return ret
+
 }
