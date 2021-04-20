@@ -24,6 +24,14 @@ public class DemoCaseActivity extends DebuggerActivity {
                 return false;
             }
         });
+
+        addAction(new ActionAdapter.Action("Toast测试") {
+            @Override
+            public boolean invoke() {
+                Toast.makeText(getBaseContext(), "invoke", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
     }
 
     public static String getDebugLabel() {

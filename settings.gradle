@@ -1,3 +1,4 @@
+include ':mocklocation'
 include ':debugger'
 include ':ipc'
 include ':comm'

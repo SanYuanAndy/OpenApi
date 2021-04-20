@@ -26,6 +26,8 @@
         <activity android:name=".MainActivity"/>
         <activity android:name=".DemoCaseActivity"/>
         <activity android:name=".IPCProviderActivity"/>
+        <activity android:name=".IPCProviderRemoteActivity"
+            android:process=":remote"/>
 
     </application>
 
