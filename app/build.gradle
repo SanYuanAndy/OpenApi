@@ -66,6 +66,8 @@ dependencies {
     implementation project(":comm")
     implementation project(':ipc')
     implementation project(':debugger')
+    implementation project(':mocklocation')
+
 
 }
 

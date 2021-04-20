@@ -1,6 +1,7 @@
 package com.openapi.debugger;
 
 import android.content.Context;
+import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,8 @@ import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.openapi.comm.utils.LogUtil;
 
 import java.util.List;
 
@@ -19,6 +22,16 @@ public class ActionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         public Action(String label) {
             this.label = label;
         }
+
+        private final boolean do_invoke() {
+            boolean ret = false;
+            long start = SystemClock.elapsedRealtime();
+            ret = invoke();
+            long cost = SystemClock.elapsedRealtime() - start;
+            LogUtil.d(label, "cost:" + cost);
+            return ret;
+        }
+
 
         public abstract boolean invoke();
     }
@@ -58,7 +71,7 @@ public class ActionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             public void onClick(View v) {
                 Action action = mData.get(position);
                 if (action != null) {
-                    action.invoke();
+                    action.do_invoke();
                 }
             }
         });

@@ -2,6 +2,8 @@ package com.openapi.ipc;
 
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,18 +20,32 @@ public class IPCProvider extends EmptyContentProvider {
             public Bundle invoke(String arg, Bundle extras) {
                 String strServiceName = extras.getString("service_name");
                 Bundle b = new Bundle();
-                b.putBinder("binder", new Binder());
+                b.putBinder("binder", ServiceManger.getsInstance().getService(strServiceName));
                 b.putBoolean("ret", true);
                 return b;
             }
         });
 
-        CommandManager.getInstance().regMethod("setLevel", new ICommand() {
+        CommandManager.getInstance().regMethod("addService", new ICommand() {
             @Override
             public Bundle invoke(String arg, Bundle extras) {
-                int level = extras.getInt("level", -1);
+                String strServiceName = extras.getString("service_name");
+                IBinder binder = extras.getBinder("binder");
                 Bundle b = new Bundle();
-                b.putBoolean("ret", level > 0);
+                b.putBoolean("ret", ServiceManger.getsInstance().registerService(strServiceName, binder));
+                return b;
+            }
+        });
+
+        CommandManager.getInstance().regMethod("print", new ICommand() {
+            @Override
+            public Bundle invoke(String arg, Bundle extras) {
+                int level = extras.getInt("level", Log.VERBOSE);
+                String tag = extras.getString("tag", "");
+                String content = extras.getString("content", "");
+                Log.println(level, tag, content);
+                Bundle b = new Bundle();
+                b.putBoolean("ret", true);
                 return b;
             }
         });
