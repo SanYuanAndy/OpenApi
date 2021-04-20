@@ -28,7 +28,9 @@ public class MockLocationService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         keepAlive();
-        VirtualLocationManager.getInstance().onReceive(this, (Intent)intent.getParcelableExtra("intent"));
+        if (intent != null) {
+            VirtualLocationManager.getInstance().onReceive(this, (Intent) intent.getParcelableExtra("intent"));
+        }
         return super.onStartCommand(intent, flags, startId);
     }
 
