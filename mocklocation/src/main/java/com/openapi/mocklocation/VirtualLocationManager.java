@@ -170,6 +170,7 @@ public class VirtualLocationManager {
 
         locationManager.setTestProviderEnabled(PROVIDER_NAME, false);
         locationManager.removeTestProvider(PROVIDER_NAME);
+        mCount = 0;
         Log.d(TAG, "stop mock location");
     }
 
