@@ -30,8 +30,5 @@ public class ConfigActivity extends DebuggerActivity {
             }
         });
     }
-
-    public static String getDebugLabel() {
-        return "ConfigActivity";
-    }
+    
 }
