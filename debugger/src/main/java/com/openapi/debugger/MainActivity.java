@@ -62,15 +62,29 @@ public class MainActivity extends Activity {
             LogUtil.d(TAG, "activity name:" + name);
             try {
                 Class<?> clazz = Class.forName(name);
-                Method method = clazz.getMethod("getDebugLabel");
-                String label = (String) method.invoke(clazz);
-                if (!TextUtils.isEmpty(label)) {
-                    CaseAdapter.CaseInfo info = new CaseAdapter.CaseInfo();
-                    info.label = label;
-                    info.classFullName = name;
-                    info.clazz = clazz;
-                    mCaseList.add(info);
+                String label = null;
+                try {
+                    Method method = clazz.getMethod("getDebugLabel");
+                    label = (String) method.invoke(clazz);
+                } catch (Exception e) {
+
                 }
+                if (TextUtils.isEmpty(label)) {
+                    if (clazz.getSuperclass() == DebuggerActivity.class) {
+                        label = clazz.getSimpleName();
+                    }
+                }
+
+                if (TextUtils.isEmpty(label)) {
+                    continue;
+                }
+
+                CaseAdapter.CaseInfo info = new CaseAdapter.CaseInfo();
+                info.label = label;
+                info.classFullName = name;
+                info.clazz = clazz;
+                mCaseList.add(info);
+
             } catch (Exception e) {
                 // e.printStackTrace();
             }
