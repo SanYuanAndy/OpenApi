@@ -6,6 +6,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,6 +30,13 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.case_home);
         mCaseRecyclerView = findViewById(R.id.recyclerview_cases);
+        TextView tv = findViewById(R.id.tv_back);
+        tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         mCaseRecyclerView.setLayoutManager(layoutManager);
         mCaseAdapter = new CaseAdapter(this, mCaseList);
