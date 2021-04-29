@@ -30,5 +30,9 @@ public class ConfigActivity extends DebuggerActivity {
             }
         });
     }
-    
+
+    public static String getDebugLabel() {
+        return "应用配置";
+    }
+
 }
