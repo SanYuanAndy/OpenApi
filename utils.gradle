@@ -71,7 +71,15 @@ def _store(OutputStream outputStream, Properties properties) {
 }
 
 
+def _createFile(String fileName) {
+    File f = new File(fileName)
+    if (!f.exists()) {
+        f.createNewFile();
+    }
+}
 def _setPropertyToFile(String fileName, String propertyName,  Object value) {
+    _createFile(fileName)
+
     Properties properties = new Properties()
     properties.load(new FileInputStream(fileName))
     String newValue = "" + value
@@ -86,10 +94,15 @@ def _setPropertyToFile(String fileName, String propertyName,  Object value) {
 }
 
 def _getPropertyFromFile(String fileName, String propertyName, Object defaultValue) {
+    _createFile(fileName)
+
     Properties properties = new Properties()
     properties.load(new FileInputStream(fileName))
-
     String obj = properties.getProperty(propertyName)
+    if (obj == null) {
+        return defaultValue
+    }
+
     Object ret = defaultValue
     switch (defaultValue.class.hashCode()) {
         case Boolean.class.hashCode():
@@ -111,7 +124,6 @@ def _getPropertyFromFile(String fileName, String propertyName, Object defaultVal
         default:
             ret = obj
     }
-
     return ret
 }
 
