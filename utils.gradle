@@ -139,10 +139,20 @@ def _getProductProperty(String propertyName, Object defaultValue) {
     _getPropertyFromFile(ProductPropertyName(), propertyName, defaultValue)
 }
 
-def _getProductVersion(int major, int minor, String dateFormat) {
-    String v_date = new Date().format(dateFormat)
+def _getProductVersion(boolean needDate) {
+    String sDate = ""
+    if (needDate) {
+        sdate = "-" + new Date().format("yyyyMMdd")
+    }
+
+    int major = getProductProperty("VERSION_MAJOR", 1)
+    int minor = getProductProperty("VERSION_MAJOR", 0)
+
     String more = getShortCommitId()
-    String versionName = String.format("%d.%d.%s-%s", major, minor, more, v_date)
+
+    String extra = "";
+
+    String versionName = String.format("%d.%d.%s%s%s", major, minor, more, extra, sDate)
     println versionName
     return versionName
 }
