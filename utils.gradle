@@ -1,0 +1,136 @@
+ext {
+    getProperty = this.&_getProperty
+    getWeekOfYear = this.&_getWeekOfYear
+    getShortCommitId = this.&_getShortCommitId
+    setPropertyToFile = this.&_setPropertyToFile
+    getPropertyFromFile = this.&_getPropertyFromFile
+    setProductProperty = this.&_setProductProperty
+    getProductProperty = this.&_getProductProperty
+    getProductVersion = this.&_getProductVersion
+}
+
+def _getProperty(String key, Object defaultValue) {
+    Object obj = null
+    if (!hasProperty(key)) {
+        return defaultValue
+    }
+
+    obj = getProperty(key)
+    Object ret = defaultValue
+
+    switch (defaultValue.class.hashCode()) {
+        case Boolean.class.hashCode():
+        case boolean.class.hashCode():
+            try {
+                ret = Boolean.parseBoolean(obj);
+            } catch(Exception e) {
+
+            }
+            break
+        case Integer.class.hashCode():
+        case int.class.hashCode():
+            try {
+                ret = Integer.parseInt(obj);
+            } catch(Exception e) {
+
+            }
+            break
+        default:
+            ret = obj
+    }
+
+    return ret
+
+}
+
+def _getWeekOfYear() {
+    Calendar c = Calendar.getInstance();
+    int weeks = c.get(Calendar.WEEK_OF_YEAR)
+    return weeks
+}
+
+def _getShortCommitId() {
+    String commitId = "0"
+    try {
+      commitId = 'git rev-parse --short HEAD'.execute().text.trim()
+    } catch (Exception e) {
+
+    }
+    return commitId
+}
+
+def _store(OutputStream outputStream, Properties properties) {
+    Set<String> keys = properties.keySet()
+    for (String key : keys) {
+        String value = (String) properties.get(key)
+        outputStream.write((key + "=" + value).getBytes())
+        outputStream.write("\n".getBytes())
+    }
+    outputStream.flush()
+
+}
+
+
+def _setPropertyToFile(String fileName, String propertyName,  Object value) {
+    Properties properties = new Properties()
+    properties.load(new FileInputStream(fileName))
+    String newValue = "" + value
+    if (newValue.equals(properties.getProperty(propertyName))) {
+        return
+    }
+
+    properties.setProperty(propertyName, newValue)
+    //properties.store(new FileOutputStream(fileName), "")
+    _store(new FileOutputStream(fileName), properties)
+
+}
+
+def _getPropertyFromFile(String fileName, String propertyName, Object defaultValue) {
+    Properties properties = new Properties()
+    properties.load(new FileInputStream(fileName))
+
+    String obj = properties.getProperty(propertyName)
+    Object ret = defaultValue
+    switch (defaultValue.class.hashCode()) {
+        case Boolean.class.hashCode():
+        case boolean.class.hashCode():
+            try {
+                ret = Boolean.parseBoolean(obj);
+            } catch(Exception e) {
+
+            }
+            break
+        case Integer.class.hashCode():
+        case int.class.hashCode():
+            try {
+                ret = Integer.parseInt(obj);
+            } catch(Exception e) {
+
+            }
+            break
+        default:
+            ret = obj
+    }
+
+    return ret
+}
+
+def ProductPropertyName() {
+    return "product.properties"
+}
+
+def _setProductProperty(String propertyName, Object value) {
+    _setPropertyToFile(ProductPropertyName(), propertyName, value)
+}
+
+def _getProductProperty(String propertyName, Object defaultValue) {
+    _getPropertyFromFile(ProductPropertyName(), propertyName, defaultValue)
+}
+
+def _getProductVersion(int major, int minor, String dateFormat) {
+    String v_date = new Date().format(dateFormat)
+    String more = getShortCommitId()
+    String versionName = String.format("%d.%d.%s-%s", major, minor, more, v_date)
+    println versionName
+    return versionName
+}

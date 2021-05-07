@@ -60,3 +60,5 @@ gradle.projectsEvaluated {
         options.compilerArgs << '-Xbootclasspath/p:app/libs/framework.jar'
     }
 }
+
+apply from:'utils.gradle'
