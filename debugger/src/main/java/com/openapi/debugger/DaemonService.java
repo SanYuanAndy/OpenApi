@@ -6,6 +6,8 @@ import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -16,6 +18,7 @@ import com.openapi.comm.utils.LogUtil;
 public class DaemonService extends ForegroundService {
     public static final String TAG = DaemonService.class.getSimpleName();
     private View mFloatView = null;
+    private WindowManager.LayoutParams mLayoutParams = null;
 
     @Override
     public void sub_onCreate() {
@@ -45,7 +48,7 @@ public class DaemonService extends ForegroundService {
 
         if (mFloatView == null) {
 
-            WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+            final WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
             WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
@@ -55,10 +58,11 @@ public class DaemonService extends ForegroundService {
 
             layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
             layoutParams.format = PixelFormat.RGBA_8888;
-            layoutParams.width = 56;
-            layoutParams.height = 56;
-            layoutParams.x = 700;
-            layoutParams.y = 400;
+            layoutParams.width = getResources().getDimensionPixelSize(R.dimen.floatIconSize);
+            layoutParams.height = getResources().getDimensionPixelSize(R.dimen.floatIconSize);
+            layoutParams.x = 0;
+            layoutParams.y = 0;
+            layoutParams.gravity = Gravity.LEFT | Gravity.BOTTOM;
 
             ImageView iv = new ImageView(this);
             iv.setImageResource(R.mipmap.ic_show);
@@ -71,6 +75,34 @@ public class DaemonService extends ForegroundService {
             });
             windowManager.addView(iv, layoutParams);
             mFloatView = iv;
+            mLayoutParams = layoutParams;
+
+            mFloatView.setOnTouchListener(new View.OnTouchListener() {
+                float mInitX = 0;
+                int mCurrX = 0;
+
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN: {
+                            mInitX = event.getRawX();
+                            mCurrX = mLayoutParams.x;
+                            break;
+                        }
+                        case MotionEvent.ACTION_MOVE: {
+                            int offset = (int)(event.getRawX() - mInitX);
+                            mLayoutParams.x = mCurrX + offset;
+                            windowManager.updateViewLayout(mFloatView, mLayoutParams);
+                            break;
+                        }
+                        case MotionEvent.ACTION_CANCEL:
+                        case MotionEvent.ACTION_UP:
+                            mInitX = 0;
+                            break;
+                    }
+                    return false;
+                }
+            });
         }
     }
 
