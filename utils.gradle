@@ -49,6 +49,17 @@ def _getWeekOfYear() {
     return weeks
 }
 
+def _hasChange() {
+    boolean  change = true
+    try {
+        String ret = 'git status'.execute().text
+        println ret
+        change = !ret.contains("nothing to commit")
+    } catch (Exception e) {
+
+    }
+    return change
+}
 def _getShortCommitId() {
     String commitId = "0"
     try {
@@ -150,7 +161,7 @@ def _getProductVersion(boolean needDate) {
 
     String more = getShortCommitId()
 
-    String extra = "";
+    String extra = _hasChange() ? ".001" : ""
 
     String versionName = String.format("%d.%d.%s%s%s", major, minor, more, extra, sDate)
     println versionName
