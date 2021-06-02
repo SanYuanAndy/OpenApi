@@ -21,6 +21,10 @@ public class MainActivity extends Activity {
         onThemeChange();
     }
 
+    public void onBack(View view) {
+        finish();
+    }
+
     public void onShowDialog(View view) {
         showDialog();
     }
