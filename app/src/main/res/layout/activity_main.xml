@@ -10,6 +10,16 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="返回"
+        android:textColor="@color/theme_main_text_color"
+        android:onClick="onBack"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="切换主题"
         android:textColor="@color/theme_main_text_color"
         android:onClick="onThemeChange"
