@@ -3,11 +3,11 @@ package com.openapi.ipc;
 import android.os.MemoryFile;
 import android.os.ParcelFileDescriptor;
 import com.openapi.comm.utils.CommUtils;
+
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 
 public class SharedMemoryUtils {
 
@@ -35,6 +35,16 @@ public class SharedMemoryUtils {
         return parcelFileDescriptor;
     }
 
+    public static void native_pin(FileDescriptor fd, boolean pin) {
+        try {
+            Method method = MemoryFile.class.getDeclaredMethod("native_pin", new Class<?>[]{FileDescriptor.class, boolean.class});
+            method.setAccessible(true);
+            method.invoke(MemoryFile.class, fd, pin);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static int getSize(FileDescriptor fd) {
         int size = 0;
         try {
@@ -48,36 +58,19 @@ public class SharedMemoryUtils {
     }
 
     public static void write(MemoryFile memoryFile,byte [] data, int offset, int size) {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(4 + size);
-        byteBuffer.put(CommUtils.int2Byte(size));
-        byteBuffer.put(data, offset, size);
+        write(memoryFile.getOutputStream(), data, offset, size);
+    }
+
+    public static void write(OutputStream out, byte [] data, int offset, int size) {
         try {
-            memoryFile.getOutputStream().write(byteBuffer.array());
+            out.write(CommUtils.int2Byte(size));
+            out.write(data, 0, size);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void write(FileDescriptor fd,byte [] data, int offset, int size) {
-        FileOutputStream out = null;
-        try {
-            out = new FileOutputStream(fd);
-            ByteBuffer byteBuffer = ByteBuffer.allocate(4 + size);
-            byteBuffer.put(CommUtils.int2Byte(size));
-            byteBuffer.put(data, offset, size);
-            out.write(byteBuffer.array());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (Exception e) {
 
-                }
-            }
-        }
-    }
 
     public static byte[] read(FileDescriptor fd) {
         byte[] data = null;
