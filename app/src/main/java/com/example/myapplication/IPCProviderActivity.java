@@ -3,13 +3,15 @@ package com.example.myapplication;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.RemoteException;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.openapi.comm.utils.LogUtil;
 import com.openapi.debugger.ActionAdapter;
 import com.openapi.debugger.DebuggerActivity;
 import com.openapi.ipc.ILocationManager;
+import com.openapi.ipc.SharedMemoryUtils;
 
 public class IPCProviderActivity extends DebuggerActivity {
     private final static String TAG = IPCProviderActivity.class.getSimpleName();
@@ -45,6 +47,20 @@ public class IPCProviderActivity extends DebuggerActivity {
                 extras.putString("content", "日志打印接口调试");
                 Bundle ret = getBaseContext().getContentResolver().call(CallUri, "print", "", extras);
                 LogUtil.d(TAG, "ret:" + ret.getBoolean("ret"));
+                return false;
+            }
+        });
+
+        addAction(new ActionAdapter.Action("读共享内存") {
+            @Override
+            public boolean invoke() {
+                Bundle extras = new Bundle();
+                Bundle ret = getBaseContext().getContentResolver().call(CallUri, "getSharedMemory", "", extras);
+                ParcelFileDescriptor parcelFileDescriptor = ret.getParcelable("memory");
+                byte[] data = SharedMemoryUtils.read(parcelFileDescriptor.getFileDescriptor());
+                String text = data == null ? null : new String(data);
+                LogUtil.d(TAG, "data:" +  text);
+                Toast.makeText(getBaseContext(), text, Toast.LENGTH_SHORT).show();
                 return false;
             }
         });
