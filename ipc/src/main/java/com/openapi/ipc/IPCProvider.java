@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 
 import com.openapi.comm.utils.LogUtil;
 
+import java.io.OutputStream;
+
 public class IPCProvider extends EmptyContentProvider {
     private static final String TAG = IPCProvider.class.getSimpleName();
 
@@ -52,6 +54,7 @@ public class IPCProvider extends EmptyContentProvider {
 
         CommandManager.getInstance().regMethod("getSharedMemory", new ICommand() {
             MemoryFile mMemoryFile = null;
+            OutputStream out = null;
             int count = 0;
             @Override
             public Bundle invoke(String arg, Bundle extras) {
@@ -60,13 +63,12 @@ public class IPCProvider extends EmptyContentProvider {
                     synchronized (this) {
                         if (mMemoryFile == null) {
                             mMemoryFile = SharedMemoryUtils.create();
-                            byte[] data = "共享内存测试初始数据".getBytes();
-                            SharedMemoryUtils.write(mMemoryFile, data, 0, data.length);
+                            out = mMemoryFile.getOutputStream();
                         }
                     }
                 }
                 byte[] data = ("共享内存测试初始数据" + count++).getBytes();
-                SharedMemoryUtils.write(mMemoryFile, data, 0, data.length);
+                SharedMemoryUtils.write(out, data, 0, data.length);
                 b.putParcelable("memory", SharedMemoryUtils.getFd(mMemoryFile));
                 return b;
             }
