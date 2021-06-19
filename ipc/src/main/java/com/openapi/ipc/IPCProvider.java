@@ -1,8 +1,8 @@
 package com.openapi.ipc;
 
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.MemoryFile;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -46,6 +46,28 @@ public class IPCProvider extends EmptyContentProvider {
                 Log.println(level, tag, content);
                 Bundle b = new Bundle();
                 b.putBoolean("ret", true);
+                return b;
+            }
+        });
+
+        CommandManager.getInstance().regMethod("getSharedMemory", new ICommand() {
+            MemoryFile mMemoryFile = null;
+            int count = 0;
+            @Override
+            public Bundle invoke(String arg, Bundle extras) {
+                Bundle b = new Bundle();
+                if (mMemoryFile == null) {
+                    synchronized (this) {
+                        if (mMemoryFile == null) {
+                            mMemoryFile = SharedMemoryUtils.create();
+                            byte[] data = "共享内存测试初始数据".getBytes();
+                            SharedMemoryUtils.write(mMemoryFile, data, 0, data.length);
+                        }
+                    }
+                }
+                byte[] data = ("共享内存测试初始数据" + count++).getBytes();
+                SharedMemoryUtils.write(mMemoryFile, data, 0, data.length);
+                b.putParcelable("memory", SharedMemoryUtils.getFd(mMemoryFile));
                 return b;
             }
         });

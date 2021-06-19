@@ -52,4 +52,24 @@ public class CommUtils {
             LogUtil.e(TAG, "notify : " + strPkgName + "," + strName);
         }
     }
+
+    public static byte[] int2Byte(int value) {
+        byte[] ret = new byte[4];
+        for (int i = 0; i < ret.length; ++i) {
+            ret[i] = (byte)(0x00ff & (value >> (i * 8)));
+        }
+        return ret;
+    }
+
+    public static int byte2Int(byte[] value) {
+        if (value == null || value.length != 4) {
+            return 0;
+        }
+
+        int ret = 0;
+        for (int i = 0; i < value.length; ++i) {
+            ret += value[i] << ( i* 8);
+        }
+        return ret;
+    }
 }
