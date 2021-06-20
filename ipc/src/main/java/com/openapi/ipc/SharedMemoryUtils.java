@@ -23,7 +23,7 @@ public class SharedMemoryUtils {
         return memoryFile;
     }
 
-    public static ParcelFileDescriptor getFd(MemoryFile memoryFile) {
+    public static ParcelFileDescriptor getParcelFileDescriptor(MemoryFile memoryFile) {
         ParcelFileDescriptor parcelFileDescriptor = null;
         try {
             Method method = MemoryFile.class.getDeclaredMethod("getFileDescriptor");
@@ -33,6 +33,17 @@ public class SharedMemoryUtils {
 
         }
         return parcelFileDescriptor;
+    }
+
+    public static FileDescriptor getFileDescriptor(MemoryFile memoryFile) {
+        FileDescriptor fd = null;
+        try {
+            Method method = MemoryFile.class.getDeclaredMethod("getFileDescriptor");
+            fd = (FileDescriptor) method.invoke(memoryFile);
+        } catch (Exception e) {
+
+        }
+        return fd;
     }
 
     public static void native_pin(FileDescriptor fd, boolean pin) {

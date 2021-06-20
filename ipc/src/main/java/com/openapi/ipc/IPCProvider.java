@@ -3,6 +3,7 @@ package com.openapi.ipc;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.MemoryFile;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -55,6 +56,7 @@ public class IPCProvider extends EmptyContentProvider {
         CommandManager.getInstance().regMethod("getSharedMemory", new ICommand() {
             MemoryFile mMemoryFile = null;
             OutputStream out = null;
+            ParcelFileDescriptor parcelFileDescriptor = null;
             int count = 0;
             @Override
             public Bundle invoke(String arg, Bundle extras) {
@@ -64,12 +66,14 @@ public class IPCProvider extends EmptyContentProvider {
                         if (mMemoryFile == null) {
                             mMemoryFile = SharedMemoryUtils.create();
                             out = mMemoryFile.getOutputStream();
+                            parcelFileDescriptor = SharedMemoryUtils.getParcelFileDescriptor(mMemoryFile);
+                            LogUtil.d(TAG, "fd:" + SharedMemoryUtils.getFileDescriptor(mMemoryFile));
                         }
                     }
                 }
                 byte[] data = ("共享内存测试初始数据" + count++).getBytes();
                 SharedMemoryUtils.write(out, data, 0, data.length);
-                b.putParcelable("memory", SharedMemoryUtils.getFd(mMemoryFile));
+                b.putParcelable("memory", parcelFileDescriptor);
                 return b;
             }
         });
