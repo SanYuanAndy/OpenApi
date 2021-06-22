@@ -1,5 +1,6 @@
 package com.openapi.ipc;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.MemoryFile;
@@ -74,6 +75,28 @@ public class IPCProvider extends EmptyContentProvider {
                 byte[] data = ("共享内存测试初始数据" + count++).getBytes();
                 SharedMemoryUtils.write(out, data, 0, data.length);
                 b.putParcelable("memory", parcelFileDescriptor);
+                return b;
+            }
+        });
+
+        CommandManager.getInstance().regMethod("getSharedMemory-advance", new ICommand() {
+            SharedMemoryWrapper mMemoryWrapper;
+            int count = 0;
+            @Override
+            public Bundle invoke(String arg, Bundle extras) {
+                Bundle b = new Bundle();
+                if (mMemoryWrapper == null) {
+                    synchronized (this) {
+                        if (mMemoryWrapper == null) {
+                            mMemoryWrapper = SharedMemoryWrapper.create("share", 1024*1024);
+                        }
+                    }
+                }
+                byte[] data = ("共享内存测试初始数据" + count++).getBytes();
+                mMemoryWrapper.write(data, 0, data.length);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                    b.putParcelable("memory", mMemoryWrapper.getSharedMemory());
+                }
                 return b;
             }
         });

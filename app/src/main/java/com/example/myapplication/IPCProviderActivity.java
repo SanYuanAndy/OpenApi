@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
+import android.os.SharedMemory;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -12,6 +13,7 @@ import com.openapi.debugger.ActionAdapter;
 import com.openapi.debugger.DebuggerActivity;
 import com.openapi.ipc.ILocationManager;
 import com.openapi.ipc.SharedMemoryUtils;
+import com.openapi.ipc.SharedMemoryWrapper;
 
 public class IPCProviderActivity extends DebuggerActivity {
     private final static String TAG = IPCProviderActivity.class.getSimpleName();
@@ -64,9 +66,49 @@ public class IPCProviderActivity extends DebuggerActivity {
                 return false;
             }
         });
+
+        addAction(new ActionAdapter.Action("读共享内存-advance") {
+            @Override
+            public boolean invoke() {
+                SharedMemoryWrapper wrapper = getAdvanceSharedMemory();
+                readSharedMemory(wrapper);
+                wrapper.close();
+                return false;
+            }
+        });
+
+        addAction(new ActionAdapter.Action("读共享内存-advance-persistent") {
+            SharedMemoryWrapper mWrapper = null;
+            @Override
+            public boolean invoke() {
+                if (mWrapper == null) {
+                    mWrapper = getAdvanceSharedMemory();
+                }
+                readSharedMemory(mWrapper);
+                return false;
+            }
+        });
     }
 
     public static String getDebugLabel() {
         return TAG;
     }
+
+    public SharedMemoryWrapper getAdvanceSharedMemory() {
+        Bundle extras = new Bundle();
+        Bundle ret = getBaseContext().getContentResolver().call(CallUri, "getSharedMemory-advance", "", extras);
+        SharedMemory sharedMemory = ret.getParcelable("memory");
+        SharedMemoryWrapper wrapper = SharedMemoryWrapper.create(sharedMemory);
+        return wrapper;
+    }
+
+    private void readSharedMemory(SharedMemoryWrapper wrapper) {
+        if (wrapper != null) {
+            byte[] data = wrapper.read();
+            String text = data == null ? null : new String(data);
+            LogUtil.d(TAG, "data:" +  text);
+            Toast.makeText(getBaseContext(), text, Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }
