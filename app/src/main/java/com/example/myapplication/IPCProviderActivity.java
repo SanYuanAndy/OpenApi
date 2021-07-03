@@ -1,7 +1,10 @@
 package com.example.myapplication;
 
+import android.content.ContentResolver;
+import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.SharedMemory;
@@ -85,6 +88,21 @@ public class IPCProviderActivity extends DebuggerActivity {
                     mWrapper = getAdvanceSharedMemory();
                 }
                 readSharedMemory(mWrapper);
+                return false;
+            }
+        });
+
+        addAction(new ActionAdapter.Action("注册Observer") {
+            @Override
+            public boolean invoke() {
+                ContentResolver resolver = getContentResolver();
+                Uri uri = Uri.parse("content://com.openapi.provider/status");
+                resolver.registerContentObserver(uri, false, new ContentObserver(new Handler()) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        LogUtil.d(TAG, "onChange:" + selfChange);
+                    }
+                });
                 return false;
             }
         });
