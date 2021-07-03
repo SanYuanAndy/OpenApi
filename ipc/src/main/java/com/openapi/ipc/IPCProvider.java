@@ -1,5 +1,6 @@
 package com.openapi.ipc;
 
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -37,6 +38,8 @@ public class IPCProvider extends EmptyContentProvider {
                 IBinder binder = extras.getBinder("binder");
                 Bundle b = new Bundle();
                 b.putBoolean("ret", ServiceManger.getsInstance().registerService(strServiceName, binder));
+                Uri uri = Uri.parse("content://com.openapi.provider/status");
+                getContext().getContentResolver().notifyChange(uri, null);
                 return b;
             }
         });
