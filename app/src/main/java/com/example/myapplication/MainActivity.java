@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
 
+import com.openapi.comm.utils.MarqueeTextView;
 import com.openapi.multitheme.MultiThemeSDK;
 
 public class MainActivity extends Activity {
@@ -14,6 +15,8 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        MarqueeTextView tv = findViewById(R.id.web);
+        tv.setSpeedLevel(0.1f);
     }
 
     int mIndex = 0;

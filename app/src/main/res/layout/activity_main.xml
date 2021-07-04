@@ -40,14 +40,14 @@
         android:layout_height="wrap_content"
         android:src="@mipmap/theme_ic_launcher"/>
 
-    <TextView
+    <com.openapi.comm.utils.MarqueeTextView
         android:id="@+id/web"
-        android:layout_width="match_parent"
+        android:layout_width="128dp"
         android:layout_height="match_parent"
         android:layout_marginTop="30dp"
-        android:text="你好呀"
+        android:text="你好呀今天天气怎么样哦"
         android:clickable="true"
         android:textSize="32sp"
         android:textColor="@color/theme_main_text_color">
-    </TextView>
+    </com.openapi.comm.utils.MarqueeTextView>
 </LinearLayout>
