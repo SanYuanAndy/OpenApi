@@ -139,7 +139,7 @@ def _getPropertyFromFile(String fileName, String propertyName, Object defaultVal
 }
 
 def ProductPropertyName() {
-    return "product.properties"
+    return new File(rootDir, "product.properties").absolutePath
 }
 
 def _setProductProperty(String propertyName, Object value) {

@@ -3,8 +3,6 @@ apply plugin: "com.android.application"
 android {
     compileSdkVersion 28
 
-    boolean needReleaseSign = getProperty("NeedReleaseSign", false)
-
     defaultConfig {
         applicationId "com.open.utils.case.all"
         minSdkVersion 19
@@ -21,10 +19,14 @@ android {
     signingConfigs {
 
         machine {
-            storeFile file('keystore/machine.keystore')
-            storePassword "${STOREPASSWORD}"
-            keyAlias "${KEYALIAS}"
-            keyPassword "${KEYPASSWORD}"
+            File f = new File(projectDir, "keystore/machine.keystore")
+            if (f.exists()) {
+                storeFile file('keystore/machine.keystore')
+                println "password:" + getProductProperty("STOREPASSWORD", "")
+                storePassword getProductProperty("STOREPASSWORD", "")
+                keyAlias getProductProperty("KEYALIAS", "")
+                keyPassword getProductProperty("KEYPASSWORD", "")
+            }
         }
     }
 
@@ -33,10 +35,8 @@ android {
 
         debug {
             minifyEnabled false
-
-            File f = new File("app/keystore/machine.keystore")
-            if (f.exists() && needReleaseSign) {
-                println "NeedReleaseSign"
+            File f = new File(projectDir, "keystore/machine.keystore")
+            if (f.exists()) {
                 signingConfig signingConfigs.machine
             }
 
@@ -55,8 +55,7 @@ android {
 }
 
 dependencies {
-    //implementation fileTree(dir: "libs", include: ["*.jar"])
-    //implementation project(':openapi')
+    // implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
@@ -70,63 +69,4 @@ dependencies {
     implementation project(':ipc')
     implementation project(':debugger')
     implementation project(':mocklocation')
-
-
-}
-
-gradle.taskGraph.beforeTask { task ->
-//    if ( task.getType() == "javaPreCompileDebug") {
-//        println 11111
-//        task.options.compilerArgs << '-Xbootclasspath/p:app/libs/framework.jar'
-//    }
-
-    tasks.withType(JavaCompile) {
-        // println 5555
-        // options.compilerArgs << '-Xbootclasspath/p:app/libs/framework.jar'
-    }
-
-}
-
-def boolean parseBoolean(String value) {
-    boolean ret = false;
-    try {
-        ret = Boolean.parseBoolean(value);
-    } catch(Exception e) {
-
-    }
-    return ret;
-}
-
-def getProperty(String key, Object defaultValue) {
-    Object obj = null
-    if (!hasProperty(key)) {
-        return defaultValue
-    }
-
-    obj = getProperty(key)
-    Object ret = defaultValue
-
-    switch (defaultValue.class.hashCode()) {
-        case Boolean.class.hashCode():
-        case boolean.class.hashCode():
-            try {
-                ret = Boolean.parseBoolean(obj);
-            } catch(Exception e) {
-
-            }
-            break
-        case Integer.class.hashCode():
-        case int.class.hashCode():
-            try {
-                ret = Integer.parseInt(obj);
-            } catch(Exception e) {
-
-            }
-            break
-        default:
-            ret = obj
-    }
-
-    return ret
-
 }

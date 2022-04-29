@@ -14,27 +14,27 @@ buildscript {
     repositories {
         maven {
             String homeDir = System.getenv("HOME") + "/plugin/inject"
+            if (new File(homeDir).exists()) {
+                name "localInject"
+            }
             url "file:$homeDir"//双引号才行
         }
     }
 
     dependencies {
-        classpath 'com.open.utils:class-injector:1.0'
+        if (rootProject.buildscript.getRepositories().findByName("localInject") != null) {
+            classpath 'com.open.utils:class-injector:1.0'
+        }
     }
 }
 
-def size = rootProject.buildscript.getRepositories().size()
-for (int i = 0; i < size; ++i) {
-    println rootProject.buildscript.getRepositories().get(i).getName()
-}
-
-project("app") {
-    apply plugin: 'com.android.application'
-    apply plugin: 'ClassInject'
+if (rootProject.buildscript.getRepositories().findByName("localInject") != null) {
+    project("app") {
+        apply plugin: 'ClassInject'
+    }
 }
 /******inject***********/
 
-//apply plugin: 'ClassInject'
 allprojects {
     repositories {
         google()
@@ -47,16 +47,9 @@ task clean(type: Delete) {
 }
 
 gradle.projectsEvaluated {
-    println 2223
-//    tasks.getByName("javaPreCompileDebug") {
-//        println 333
-//    }
-//    for (int i = 0; i < tasks.size(); ++i) {
-//        println
-//    }
 
     tasks.withType(JavaCompile) {
-        println 11111
+        println task
         options.compilerArgs << '-Xbootclasspath/p:app/libs/framework.jar'
     }
 }
