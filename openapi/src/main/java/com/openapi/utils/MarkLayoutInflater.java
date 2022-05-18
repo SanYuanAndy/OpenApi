@@ -35,9 +35,22 @@ public class MarkLayoutInflater extends LayoutInflater {
     private static class MarkContextWrapper extends ContextWrapper {
         private static final String TAG = MarkContextWrapper.class.getSimpleName();
         private LayoutInflater mInflater = null;
+        private Object mPackageInfo = null;
 
         public MarkContextWrapper(Context context){
             super(context);
+
+            if (!(context instanceof ContextWrapper)) {
+                try {
+                    Field field = context.getClass().getDeclaredField("mPackageInfo");
+                    field.setAccessible(true);
+                    mPackageInfo = field.get(context);
+                    Log.e(TAG, "" + mPackageInfo);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e(TAG, e.toString());
+                }
+            }
         }
 
         @Override
