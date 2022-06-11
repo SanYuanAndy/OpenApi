@@ -1,28 +1,56 @@
 package com.openapi.debugger;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.provider.Settings;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.openapi.comm.utils.ForegroundService;
 import com.openapi.comm.utils.LogUtil;
+import com.openapi.comm.utils.WorkHandler;
+import com.openapi.ipc.sdk.IPCProviderSDK;
 
 public class DaemonService extends ForegroundService {
     public static final String TAG = DaemonService.class.getSimpleName();
     private View mFloatView = null;
     private WindowManager.LayoutParams mLayoutParams = null;
 
+    private IBinder mBinder = new IFloatingManager.Stub() {
+        @Override
+        public void send(final int cmd, final byte[] data) throws RemoteException {
+            WorkHandler.runUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    handle(cmd, data);
+                }
+            }, 0);
+        }
+    };
+
+    private void handle(int cmd, byte[] data) {
+        switch (cmd) {
+            case 0:
+                String progress = new String(data);
+                ((TextView) mFloatView).setText(progress);
+                break;
+        }
+    }
+
     @Override
     public void sub_onCreate() {
         LogUtil.d(TAG, "sub_onCreate");
+        IPCProviderSDK.getInstance().addService("FloatingManager", mBinder);
         showFloatingWindow();
     }
 
@@ -64,8 +92,11 @@ public class DaemonService extends ForegroundService {
             layoutParams.y = 0;
             layoutParams.gravity = Gravity.LEFT | Gravity.BOTTOM;
 
-            ImageView iv = new ImageView(this);
-            iv.setImageResource(R.mipmap.ic_show);
+            TextView iv = new TextView(this);
+            iv.setTextColor(0xff000000);
+            iv.setTextSize(16);
+            iv.setGravity(Gravity.CENTER);
+            iv.setBackgroundResource(R.mipmap.ic_show);
             iv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -139,6 +170,9 @@ public class DaemonService extends ForegroundService {
         return ret;
     }
 
-
+    public static void start(Context cxt) {
+        Intent intent = new Intent(cxt, DaemonService.class);
+        cxt.startService(intent);
+    }
 
 }

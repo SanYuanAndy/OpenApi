@@ -1,0 +1,3 @@
+<resources>
+    <string name="ipc_provider_authorities">com.openapi.provider</string>
+</resources>

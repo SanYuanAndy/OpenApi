@@ -8,6 +8,7 @@ import com.openapi.comm.utils.LogUtil;
 import com.openapi.comm.utils.WorkHandler;
 import com.openapi.debugger.ActionAdapter;
 import com.openapi.debugger.DebuggerActivity;
+import com.openapi.debugger.DnsAnalysisService;
 import com.openapi.debugger.MonkeyService;
 
 import java.net.InetAddress;
@@ -103,13 +104,26 @@ public class DemoCaseActivity extends DebuggerActivity {
                         dnsList.add("customer.cx580.com");
                         dnsList.add("violation-bapi.cx580.com");
                         dnsList.add("nlchshjapi.cx580.com");
-                        Map<String, Set<String>> map = DnsParser.getInstance().parseAllDns(dnsList, 10, 5000);
+                        Map<String, Set<String>> map = DnsParser.getInstance().parseAllDns(dnsList, 10, 5000, null);
                         for (String key : map.keySet()) {
                             for (String ip : map.get(key)) {
                                 LogUtil.e("checkWhitelist", key + "," + ip);
 
                             }
                         }
+                    }
+                }, 0);
+                return false;
+            }
+        });
+
+        addAction(new ActionAdapter.Action("parseDB") {
+            @Override
+            public boolean invoke() {
+                WorkHandler.runBgThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        DnsAnalysisService.run();
                     }
                 }, 0);
                 return false;

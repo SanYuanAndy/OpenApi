@@ -9,7 +9,13 @@ import java.util.Map;
 import java.util.Set;
 
 public class DnsParser {
+    public static final String TAG = DnsParser.class.getSimpleName();
+
     public static DnsParser sInstance = new DnsParser();
+
+    public interface IProgress {
+        public void onProgress(int total, int progress, int loop, int loopIndex);
+    }
 
     private DnsParser() {
 
@@ -32,11 +38,15 @@ public class DnsParser {
         return ipList;
     }
 
-    public Map<String, Set<String>> parseAllDns(List<String> dnsList, int repeatCnt, int durationMill) {
+    public Map<String, Set<String>> parseAllDns(List<String> dnsList,
+                                                int repeatCnt, int durationMill,
+                                                IProgress progressCallBack) {
         Map<String, Set<String>> dnsIpInfoMap = new HashMap<>();
         for (int i = 0;;) {
 
-            for (String dns : dnsList) {
+            for (int j = 0; j < dnsList.size(); ++j) {
+                long begin = System.currentTimeMillis();
+                String dns = dnsList.get(j);
                 Set<String> ipSet = null;
                 if (!dnsIpInfoMap.containsKey(dns)) {
                     ipSet = new HashSet<>();
@@ -45,8 +55,16 @@ public class DnsParser {
                 ipSet = dnsIpInfoMap.get(dns);
 
                 List<String> ipList = parseDns(dns);
+
+                if (System.currentTimeMillis() - begin > 2000) {
+                    LogUtil.e(TAG, "cost too much time:" + dns);
+                }
                 for (String ip : ipList) {
                     ipSet.add(ip);
+                }
+
+                if (progressCallBack != null) {
+                    progressCallBack.onProgress(dnsList.size(), j, repeatCnt, i);
                 }
             }
 

@@ -2,7 +2,7 @@
     package="com.openapi.ipc">
     <application>
         <provider
-            android:authorities="com.openapi.provider"
+            android:authorities="@string/ipc_provider_authorities"
             android:name=".IPCProvider"
             android:process=":provider"/>
     </application>

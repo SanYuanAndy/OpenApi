@@ -5,6 +5,8 @@ import android.app.Instrumentation;
 import android.content.Context;
 
 import com.openapi.comm.utils.WorkHandler;
+import com.openapi.debugger.DaemonService;
+import com.openapi.ipc.sdk.IPCProviderSDK;
 import com.openapi.multitheme.MultiTheme;
 import com.openapi.multitheme.MultiThemeSDK;
 
@@ -18,6 +20,8 @@ public class BaseApplication extends Application {
         sContext = this;
         WorkHandler.init();
         MultiThemeSDK.getInstance().initial(this, 0);
+        IPCProviderSDK.getInstance().init(this);
+        DaemonService.start(this);
     }
 
     public static Context getApp(){
