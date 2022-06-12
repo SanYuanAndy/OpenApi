@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CommUtils {
 
@@ -120,7 +121,7 @@ public class CommUtils {
     }
 
     public static boolean isIp(String dns) {
-        boolean ret = false;
-        return ret;
+        String pattern = "^\\d+.\\d+.\\d+.\\d+$";
+        return Pattern.matches(pattern, dns);
     }
 }

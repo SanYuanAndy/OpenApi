@@ -3,9 +3,12 @@ package com.openapi.comm.utils;
 import android.text.TextUtils;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -42,6 +45,33 @@ public class FileUtils {
         }
         return content.toString();
 
+    }
+    public static void writeLines(String path, List<String[]> data) {
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path)));
+            for (String[] row : data) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < row.length; ++i) {
+                    sb.append(row[i]);
+                    if (i < row.length - 1) {
+                        sb.append(",");
+                    }
+                }
+                writer.write(sb.toString());
+                writer.write("\n");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (writer != null) {
+            try {
+                writer.close();
+            } catch (Exception e) {
+
+            }
+        }
     }
 
     public static List<String[]> readLinesFromFile(String path) {
@@ -86,7 +116,7 @@ public class FileUtils {
             }
             if (row.length > col) {
                 if (!TextUtils.isEmpty(row[col])) {
-                    out.add(row[col]);
+                    out.add(row[col].trim());
                 }
             }
         }
