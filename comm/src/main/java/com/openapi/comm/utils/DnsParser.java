@@ -64,7 +64,7 @@ public class DnsParser {
                 }
 
                 if (progressCallBack != null) {
-                    progressCallBack.onProgress(dnsList.size(), j, repeatCnt, i);
+                    progressCallBack.onProgress(dnsList.size(), j + 1, repeatCnt, i + 1);
                 }
             }
 

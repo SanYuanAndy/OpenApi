@@ -6,6 +6,7 @@ import com.openapi.comm.utils.LogUtil;
 
 import org.json.JSONArray;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MonkeyService {
@@ -29,13 +30,10 @@ public class MonkeyService {
 
     public static List<MonkeyShell.Cmd> parseCmd(String strJson) {
         JSONArray jsonArray = null;
-        List<MonkeyShell.Cmd> list = null;
+        List<MonkeyShell.Cmd> list = new ArrayList<>();
         try {
             jsonArray = new JSONArray(strJson);
             list = JSONParser.parse(MonkeyShell.Cmd.class, jsonArray);
-            for (int i = 0; i < list.size(); ++i) {
-                LogUtil.e("Shell", "" + list.get(i));
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }
