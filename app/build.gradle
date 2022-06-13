@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        applicationId "com.open.utils.case.all"
+        applicationId getProductProperty("applicationId", "com.open.utils.case.all")
         minSdkVersion 19
         targetSdkVersion 27
         versionCode 1
@@ -14,8 +14,10 @@ android {
 
         String sAction = getProductProperty("BootAction", "android.intent.action.BOOT_COMPLETED")
         String sPkgNamePrefix = getProductProperty("dns_filter_pkg_name_prefix", "")
+        String sSharedUserId= getProductProperty("sharedUserId", "")
         manifestPlaceholders += [BOOT_ACTION:sAction]
         manifestPlaceholders += [dns_filter_pkg_name_prefix:sPkgNamePrefix]
+        manifestPlaceholders += [sharedUserId:sSharedUserId]
     }
 
     signingConfigs {

@@ -170,9 +170,13 @@ public class DaemonService extends ForegroundService {
         return ret;
     }
 
-    public static void start(Context cxt) {
-        Intent intent = new Intent(cxt, DaemonService.class);
-        cxt.startService(intent);
+    public static void start(Context context) {
+        Intent i = new Intent(context, DaemonService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(i);
+        } else {
+            context.startService(i);
+        }
     }
 
 }

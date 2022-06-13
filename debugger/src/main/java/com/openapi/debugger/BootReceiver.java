@@ -12,12 +12,6 @@ public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         LogUtil.d(BootReceiver.class.getSimpleName(), "receive:" + intent.getAction());
-
-        Intent i = new Intent(context, DaemonService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(i);
-        } else {
-            context.startService(i);
-        }
+        DaemonService.start(context);
     }
 }
