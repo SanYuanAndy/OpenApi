@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JSONParser {
+    public static final String TAG = "JSONParser";
+
     public static <T> List<T> parse(Class<T> clazz, JSONArray jsonArray) {
         List<T> objList = new ArrayList<>();
 
@@ -27,7 +29,7 @@ public class JSONParser {
         try {
             obj = clazz.newInstance();
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.e(TAG, "" + e);
         }
 
         Field[] fields = clazz.getDeclaredFields();
@@ -35,7 +37,7 @@ public class JSONParser {
             try {
                 field.set(obj, jsonObj.get(field.getName()));
             } catch (Exception e) {
-                e.printStackTrace();
+                LogUtil.e(TAG, "" + e);
             }
         }
 

@@ -1,7 +1,11 @@
 package com.openapi.debugger;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.text.TextUtils;
 
+import com.openapi.comm.utils.CommUtils;
 import com.openapi.comm.utils.LogUtil;
 
 public class MonkeyShell {
@@ -14,19 +18,14 @@ public class MonkeyShell {
         public int alive;
         public String text;
         public String pkgname;
+        public String voice;
 
         @Override
         public String toString() {
-            return "Cmd{" +
-                    "name='" + name + '\'' +
-                    ", type=" + type +
-                    ", x=" + x +
-                    ", y=" + y +
-                    ", alive=" + alive +
-                    '}';
+            return CommUtils.toString(this);
         }
 
-        public void execute() {
+        public void execute(Context cxt) {
             String cmd = "";
             switch (type) {
                 case 1:
@@ -35,8 +34,11 @@ public class MonkeyShell {
                 case 2:
                     cmd = genTextInputCmd(text);
                     break;
+                case 7:
+                    cmd = genVoiceCmd(voice);
+                    break;
                 case 8:
-                    cmd = genRestartAppCmd(pkgname);
+                    cmd = genRestartAppCmd(pkgname, cxt);
                     break;
                 case 9:
                     cmd = genBackCmd();
@@ -67,16 +69,29 @@ public class MonkeyShell {
         return String.format("input text %s", text);
     }
 
-    public static String genRestartAppCmd(String pkgname) {
-        return String.format("killall %s", pkgname, pkgname);
+    public static String genRestartAppCmd(String pkgName, Context cxt) {
+        String cmd = "";
+        try {
+            Intent intent = cxt.getPackageManager().getLaunchIntentForPackage(pkgName);
+            ComponentName name = intent.getComponent();
+            cmd = String.format("am start -S -n %s/%s", name.getPackageName(), name.getClassName());
+        } catch (Exception e) {
+
+        }
+        return cmd;
+    }
+
+    public static String genVoiceCmd(String voice) {
+        String action = "android.intent.action.START_CODRIVER";
+        return String.format("am broadcast -a %s --es query %s", action, voice) + "-f 0x01000000";
     }
 
     public static String genBackCmd() {
-        return genKeyeventCmd(4);
+        return genKeyEventCmd(4);
     }
 
-    public static String genKeyeventCmd(int code) {
-        return String.format("input keyevent %d", code);
+    public static String genKeyEventCmd(int code) {
+        return String.format("input keyEvent %d", code);
     }
 
     public static boolean executeCmd(String cmd, int keepTimeMill) {

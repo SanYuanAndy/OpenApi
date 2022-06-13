@@ -1,5 +1,7 @@
 package com.openapi.debugger;
 
+import android.content.Context;
+
 import com.openapi.comm.utils.FileUtils;
 import com.openapi.comm.utils.JSONParser;
 import com.openapi.comm.utils.LogUtil;
@@ -20,11 +22,11 @@ public class MonkeyService {
        ]
      */
 
-    public static void run() {
+    public static void run(Context context) {
         String strJson = FileUtils.readStringFromFile("/sdcard/tmp/iqy.json");
         List<MonkeyShell.Cmd> cmdList = parseCmd(strJson);
         for (MonkeyShell.Cmd cmd : cmdList) {
-            cmd.execute();
+            cmd.execute(context.getApplicationContext());
         }
     }
 

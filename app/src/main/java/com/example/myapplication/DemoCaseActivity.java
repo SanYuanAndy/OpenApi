@@ -71,7 +71,7 @@ public class DemoCaseActivity extends DebuggerActivity {
                 WorkHandler.runBgThread(new Runnable() {
                     @Override
                     public void run() {
-                        MonkeyService.run();
+                        MonkeyService.run(getApplication());
                     }
                 }, 0);
                 return false;
