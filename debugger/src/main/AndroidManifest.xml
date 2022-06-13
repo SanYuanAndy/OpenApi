@@ -11,5 +11,9 @@
             </intent-filter>
         </receiver>
         <service android:name=".DaemonService"/>
+        <meta-data
+            android:name="dns_filter_pkg_name_prefix"
+            android:value="${dns_filter_pkg_name_prefix}">
+        </meta-data>
     </application>
 </manifest>

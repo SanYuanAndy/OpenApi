@@ -1,7 +1,9 @@
 package com.openapi.debugger;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.os.IBinder;
+import android.text.TextUtils;
 
 import com.openapi.comm.utils.CommUtils;
 import com.openapi.comm.utils.DnsParser;
@@ -22,8 +24,9 @@ import java.util.Set;
 
 public class DnsAnalysisService {
     public static final String TAG = DnsAnalysisService.class.getSimpleName();
-    private static final String OLD_DATA_DIR = "/sdcard/whitelist/";
-    private static final String HISTORY_DATA_DIR = "/sdcard/whitelist/history/";
+    private static final String ROOT_DIR = "/sdcard/whitelist/";
+    private static final String OLD_DATA_DIR = ROOT_DIR;
+    private static final String HISTORY_DATA_DIR = ROOT_DIR + "history/";
 
     public static class DnsInfo {
         public String pkgName;
@@ -43,12 +46,12 @@ public class DnsAnalysisService {
         }
     }
 
-    public static void run() {
+    public static void run(final Context cxt) {
         IBinder binder = IPCProviderSDK.getInstance().getService("FloatingManager");
         final IFloatingManager manager = IFloatingManager.Stub.asInterface(binder);
         sendEvent(manager, "解析开始");
 
-        File f = new File("/data/data/com.open.utils.case.all/bdfw.db");
+        File f = new File(cxt.getApplicationInfo().dataDir + "/bdfw.db");
         SQLiteHelper helper = new SQLiteHelper(f.getPath());
         List<String> tables = helper.getTableList();
         CommUtils.println(tables);
@@ -57,12 +60,18 @@ public class DnsAnalysisService {
         CommUtils.println(heads);
 
         final List<DnsInfo> dnsInfoList = new ArrayList<>();
+        final String prefix = CommUtils.getMetaValue(cxt, "dns_filter_pkg_name_prefix");
+        LogUtil.e(TAG, "prefix:" + prefix);
         helper.getTableData("bdurllist", new SQLiteHelper.IQueryCallBack() {
             @Override
             public void onQuery(Cursor cursor) {
                 DnsInfo info = new DnsInfo();
                 info.pkgName = cursor.getString(0);
                 info.dns = cursor.getString(1);
+                if (!TextUtils.isEmpty(prefix) && !info.pkgName.startsWith(prefix)) {
+                    LogUtil.e(TAG, "is not "  + prefix + ":"+ info.pkgName + "," + info.dns);
+                    return;
+                }
                 dnsInfoList.add(info);
             }
         });

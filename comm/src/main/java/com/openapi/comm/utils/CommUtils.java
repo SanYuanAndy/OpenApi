@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.json.JSONObject;
@@ -123,5 +124,22 @@ public class CommUtils {
     public static boolean isIp(String dns) {
         String pattern = "^\\d+.\\d+.\\d+.\\d+$";
         return Pattern.matches(pattern, dns);
+    }
+
+    public static <T> T getMetaValue (Context context, String name) {
+        T t = null;
+        try {
+            Bundle bundle = context.getPackageManager().
+                    getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA).
+                    metaData;
+            if (bundle == null) {
+                LogUtil.e(TAG, "no meta data");
+                return t;
+            }
+            t = (T) bundle.get(name);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return t;
     }
 }

@@ -12,8 +12,10 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        String sAction = getProperty("BootAction", "android.intent.action.BOOT_COMPLETED")
+        String sAction = getProductProperty("BootAction", "android.intent.action.BOOT_COMPLETED")
+        String sPkgNamePrefix = getProductProperty("dns_filter_pkg_name_prefix", "")
         manifestPlaceholders += [BOOT_ACTION:sAction]
+        manifestPlaceholders += [dns_filter_pkg_name_prefix:sPkgNamePrefix]
     }
 
     signingConfigs {

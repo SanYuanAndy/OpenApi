@@ -123,7 +123,7 @@ public class DemoCaseActivity extends DebuggerActivity {
                 WorkHandler.runBgThread(new Runnable() {
                     @Override
                     public void run() {
-                        DnsAnalysisService.run();
+                        DnsAnalysisService.run(getApplication());
                     }
                 }, 0);
                 return false;
