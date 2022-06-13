@@ -9,6 +9,7 @@ import com.openapi.comm.utils.CommUtils;
 import com.openapi.comm.utils.LogUtil;
 
 public class MonkeyShell {
+    public static final String TAG = MonkeyShell.class.getSimpleName();
 
     public static class Cmd {
         public String name;
@@ -83,7 +84,7 @@ public class MonkeyShell {
 
     public static String genVoiceCmd(String voice) {
         String action = "android.intent.action.START_CODRIVER";
-        return String.format("am broadcast -a %s --es query %s", action, voice) + "-f 0x01000000";
+        return String.format("am broadcast -a %s --es query %s", action, voice) + " -f 0x01000000";
     }
 
     public static String genBackCmd() {
@@ -98,9 +99,10 @@ public class MonkeyShell {
         boolean ret = false;
         Runtime runtime = Runtime.getRuntime();
         try {
-            LogUtil.e("", cmd);
+            LogUtil.e(TAG, cmd);
             runtime.exec(cmd);
-            Thread.sleep(keepTimeMill);
+            LogUtil.e(TAG, "end");
+            Thread.sleep(keepTimeMill * 1000);
             ret = true;
         } catch (Exception e) {
             e.printStackTrace();

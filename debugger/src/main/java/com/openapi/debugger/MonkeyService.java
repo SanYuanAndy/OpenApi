@@ -8,6 +8,8 @@ import com.openapi.comm.utils.LogUtil;
 
 import org.json.JSONArray;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,10 +25,20 @@ public class MonkeyService {
      */
 
     public static void run(Context context) {
-        String strJson = FileUtils.readStringFromFile("/sdcard/tmp/iqy.json");
-        List<MonkeyShell.Cmd> cmdList = parseCmd(strJson);
-        for (MonkeyShell.Cmd cmd : cmdList) {
-            cmd.execute(context.getApplicationContext());
+        File root = new File("/sdcard/whitelist/monkey/");
+        File[] all = root.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.getName().endsWith(".json");
+            }
+        });
+        for (File f : all) {
+            String strJson = FileUtils.readStringFromFile(f.getPath());
+            List<MonkeyShell.Cmd> cmdList = parseCmd(strJson);
+            for (MonkeyShell.Cmd cmd : cmdList) {
+                UIManager.getInstance().sendFloatingText(cmd.name);
+                cmd.execute(context.getApplicationContext());
+            }
         }
     }
 
