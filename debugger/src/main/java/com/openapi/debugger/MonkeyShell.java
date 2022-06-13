@@ -11,6 +11,14 @@ import com.openapi.comm.utils.LogUtil;
 public class MonkeyShell {
     public static final String TAG = MonkeyShell.class.getSimpleName();
 
+    public static final int CMD_CLICK = 1;
+    public static final int CMD_INPUT_TEXT = 2;
+
+    public static final int CMD_VOICE = 7;
+    public static final int CMD_RESTART_APP = 8;
+    public static final int CMD_BACK = 9;
+    public static final int CMD_ENTER = 10;
+
     public static class Cmd {
         public String name;
         public int type;
@@ -20,6 +28,7 @@ public class MonkeyShell {
         public String text;
         public String pkgname;
         public String voice;
+        public int keycode;
 
         @Override
         public String toString() {
@@ -43,6 +52,13 @@ public class MonkeyShell {
                     break;
                 case 9:
                     cmd = genBackCmd();
+                    break;
+                case 10:
+                    cmd = genEnterCmd();
+                    break;
+                case 1000:
+                    cmd = genKeyEventCmd(keycode);
+                    break;
                 default:
                     break;
             }
@@ -91,8 +107,12 @@ public class MonkeyShell {
         return genKeyEventCmd(4);
     }
 
+    public static String genEnterCmd() {
+        return genKeyEventCmd(66);
+    }
+
     public static String genKeyEventCmd(int code) {
-        return String.format("input keyEvent %d", code);
+        return String.format("input keyevent %d", code);
     }
 
     public static boolean executeCmd(String cmd, int keepTimeMill) {
@@ -101,7 +121,6 @@ public class MonkeyShell {
         try {
             LogUtil.e(TAG, cmd);
             runtime.exec(cmd);
-            LogUtil.e(TAG, "end");
             Thread.sleep(keepTimeMill * 1000);
             ret = true;
         } catch (Exception e) {
