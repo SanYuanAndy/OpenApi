@@ -123,7 +123,7 @@ public class DnsAnalysisService {
         List<String[]> change = merge(newDnsList, newIpList);
         FileUtils.writeLines(HISTORY_DATA_DIR + "now.csv", change);
 
-        sendEvent(manager, "解析DNS结束");
+        sendEvent(manager, String.format("解析结束, 新增域名%d个, 新增IP%d个", newDnsList.size(), newIpList.size()));
     }
 
     public static void getOldData(Set<String> dnsList, Set<String> ipList) {
