@@ -40,6 +40,19 @@ allprojects {
         google()
         jcenter()
     }
+
+    if (getProject().getName() != "app" && getProject().getName() != getRootProject().getName()) {
+       task makeAar {
+           doLast {
+               String sdk_out = getRootDir().getPath() + "/sdk_out"
+               copy {
+                   from("build/outputs/aar")
+                   into(sdk_out)
+               }
+           }
+       }
+       makeAar.dependsOn('assembleRelease')
+    }
 }
 
 task clean(type: Delete) {

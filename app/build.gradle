@@ -20,6 +20,10 @@ android {
         manifestPlaceholders += [sharedUserId:sSharedUserId]
     }
 
+    lintOptions {
+        abortOnError false
+    }
+
     signingConfigs {
 
         machine {
@@ -49,8 +53,7 @@ android {
         release {
             minifyEnabled false
             File f = new File("app/keystore/machine.keystore")
-            if (f.exists() && needReleaseSign) {
-                println "NeedReleaseSign"
+            if (f.exists()) {
                 signingConfig signingConfigs.machine
             }
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
