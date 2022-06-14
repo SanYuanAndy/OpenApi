@@ -1,3 +1,3 @@
 <resources>
-    <dimen name="floatIconSize">128dp</dimen>
+    <dimen name="floatIconSize">96dp</dimen>
 </resources>

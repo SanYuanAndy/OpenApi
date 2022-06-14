@@ -6,43 +6,72 @@ import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
 import android.os.RemoteException;
 import android.provider.Settings;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.openapi.comm.utils.ForegroundService;
 import com.openapi.comm.utils.LogUtil;
-import com.openapi.comm.utils.WorkHandler;
 import com.openapi.ipc.sdk.IPCProviderSDK;
 
 public class DaemonService extends ForegroundService {
     public static final String TAG = DaemonService.class.getSimpleName();
     private View mFloatView = null;
     private WindowManager.LayoutParams mLayoutParams = null;
+    private static final int MSG_LABEL_MAX_WIDTH = 600;
+    private static final int MSG_LABEL_ALIVE_MAX_TIME_MILL = 60000;
+
+    private static final int MSG_HANDLE_EVENT = 1;
+    private static final int MSG_SHOW_MSG_LABEL = 10;
+    private static final int MSG_DISMISS_MSG_LABEL = 11;
+
+    private Handler mUiHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_HANDLE_EVENT:
+                    handleEvent(msg.arg1, (byte[]) msg.obj);
+                    break;
+                case MSG_SHOW_MSG_LABEL:
+                    showMsgLabel((String) msg.obj);
+                    break;
+                case MSG_DISMISS_MSG_LABEL:
+                    dismissMsgLabel();
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
 
     private IBinder mBinder = new IFloatingManager.Stub() {
         @Override
         public void send(final int cmd, final byte[] data) throws RemoteException {
-            WorkHandler.runUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    handle(cmd, data);
-                }
-            }, 0);
+            Message msg = Message.obtain();
+            msg.what = MSG_HANDLE_EVENT;
+            msg.arg1 = cmd;
+            msg.obj = data;
+            mUiHandler.sendMessage(msg);
         }
     };
 
-    private void handle(int cmd, byte[] data) {
+    private void handleEvent(int cmd, byte[] data) {
         switch (cmd) {
             case 0:
                 String progress = new String(data);
-                ((TextView) mFloatView).setText(progress);
+                Message msg = Message.obtain();
+                msg.what = MSG_SHOW_MSG_LABEL;
+                msg.obj = progress;
+                mUiHandler.sendMessage(msg);
                 break;
         }
     }
@@ -92,20 +121,23 @@ public class DaemonService extends ForegroundService {
             layoutParams.y = 0;
             layoutParams.gravity = Gravity.LEFT | Gravity.BOTTOM;
 
-            TextView iv = new TextView(this);
-            iv.setTextColor(0xff000000);
-            iv.setTextSize(16);
-            iv.setGravity(Gravity.CENTER);
-            iv.setBackgroundResource(R.mipmap.ic_show);
-            iv.setOnClickListener(new View.OnClickListener() {
+            View root = ((LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.floating, null);
+            root.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     LogUtil.d(TAG, "onClick" );
                     launch();
                 }
             });
-            windowManager.addView(iv, layoutParams);
-            mFloatView = iv;
+            root.findViewById(R.id.tv_msg).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // done nothing for avoid drag
+                }
+            });
+
+            windowManager.addView(root, layoutParams);
+            mFloatView = root;
             mLayoutParams = layoutParams;
 
             mFloatView.setOnTouchListener(new View.OnTouchListener() {
@@ -169,6 +201,41 @@ public class DaemonService extends ForegroundService {
         }
         return ret;
     }
+
+    private void update(int width) {
+        if (mFloatView == null) {
+            return;
+        }
+
+        if (mLayoutParams == null) {
+            return;
+        }
+
+        if (mLayoutParams.width == width) {
+            return;
+        }
+
+        mLayoutParams.width = width;
+        final WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        windowManager.updateViewLayout(mFloatView, mLayoutParams);
+    }
+
+    private void showMsgLabel(String msg) {
+        mUiHandler.removeMessages(MSG_DISMISS_MSG_LABEL);
+
+        TextView tv = mFloatView.findViewById(R.id.tv_msg);
+        tv.setText(msg);
+
+        update(MSG_LABEL_MAX_WIDTH);
+
+        mUiHandler.sendEmptyMessageDelayed(MSG_DISMISS_MSG_LABEL, MSG_LABEL_ALIVE_MAX_TIME_MILL);
+    }
+
+    private void dismissMsgLabel() {
+        int iconSize = getResources().getDimensionPixelSize(R.dimen.floatIconSize);
+        update(iconSize);
+    }
+
 
     public static void start(Context context) {
         Intent i = new Intent(context, DaemonService.class);

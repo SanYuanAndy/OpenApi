@@ -89,7 +89,7 @@ public class DnsAnalysisService {
         Map<String, Set<String>> map = DnsParser.getInstance().parseAllDns(dnsList, 1, 5000, new DnsParser.IProgress() {
             @Override
             public void onProgress(int total, int progress, int loop, int loopIndex) {
-                String data = String.format("解析DNS\nLoop:%d/%d\n%d/%d", loopIndex, loop, progress, total);
+                String data = String.format("解析DNS Loop:%d/%d %d/%d", loopIndex, loop, progress, total);
                 sendEvent(manager, data);
             }
         });
@@ -123,7 +123,7 @@ public class DnsAnalysisService {
         List<String[]> change = merge(newDnsList, newIpList);
         FileUtils.writeLines(HISTORY_DATA_DIR + "now.csv", change);
 
-        sendEvent(manager, "解析DNS\n结束");
+        sendEvent(manager, "解析DNS结束");
     }
 
     public static void getOldData(Set<String> dnsList, Set<String> ipList) {
