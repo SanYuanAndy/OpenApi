@@ -2,7 +2,6 @@ package com.openapi.debugger;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.os.IBinder;
 import android.text.TextUtils;
 
 import com.openapi.comm.utils.CommUtils;
@@ -10,13 +9,10 @@ import com.openapi.comm.utils.DnsParser;
 import com.openapi.comm.utils.FileUtils;
 import com.openapi.comm.utils.LogUtil;
 import com.openapi.comm.utils.SQLiteHelper;
-import com.openapi.ipc.sdk.IPCProviderSDK;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,18 +34,8 @@ public class DnsAnalysisService {
         }
     }
 
-    public static void sendEvent(IFloatingManager manager, String data) {
-        try {
-            manager.send(0, data.getBytes());
-        } catch (Exception e) {
-
-        }
-    }
-
     public static void run(final Context cxt) {
-        IBinder binder = IPCProviderSDK.getInstance().getService("FloatingManager");
-        final IFloatingManager manager = IFloatingManager.Stub.asInterface(binder);
-        sendEvent(manager, "解析开始");
+        UIManager.getInstance().sendFloatingText("解析开始");
 
         File f = new File(cxt.getApplicationInfo().dataDir + "/bdfw.db");
         SQLiteHelper helper = new SQLiteHelper(f.getPath());
@@ -89,8 +75,8 @@ public class DnsAnalysisService {
         Map<String, Set<String>> map = DnsParser.getInstance().parseAllDns(dnsList, 1, 5000, new DnsParser.IProgress() {
             @Override
             public void onProgress(int total, int progress, int loop, int loopIndex) {
-                String data = String.format("解析DNS Loop:%d/%d %d/%d", loopIndex, loop, progress, total);
-                sendEvent(manager, data);
+                String data = String.format("解析DNS (%d/%d) %d/%d", loopIndex, loop, progress, total);
+                UIManager.getInstance().sendFloatingText(data);
             }
         });
 
@@ -120,10 +106,12 @@ public class DnsAnalysisService {
             }
         }
 
-        List<String[]> change = merge(newDnsList, newIpList);
+        List<String[]> change = CommUtils.merge(newDnsList, newIpList);
         FileUtils.writeLines(HISTORY_DATA_DIR + "now.csv", change);
 
-        sendEvent(manager, String.format("解析结束, 新增域名%d个, 新增IP%d个", newDnsList.size(), newIpList.size()));
+        UIManager.getInstance().
+                sendFloatingText(
+                        String.format("解析结束, 新增域名%d个, 新增IP%d个", newDnsList.size(), newIpList.size()));
     }
 
     public static void getOldData(Set<String> dnsList, Set<String> ipList) {
@@ -149,46 +137,4 @@ public class DnsAnalysisService {
             FileUtils.readLinesFromFile(f.getPath(), 1, ipList);
         }
     }
-
-    public static List<String[]> merge(List<String>... dataArray) {
-        List<String[]> out = new ArrayList<>();
-        int len = 0;
-        for (int i = 0; i < dataArray.length; ++i) {
-            if (dataArray[i].size() > len) {
-                len = dataArray[i].size();
-            }
-        }
-
-        for (int i = 0; i < len; ++i) {
-            String[] row = new String[dataArray.length];
-            Arrays.fill(row, "");
-            for (int j = 0; j < row.length; ++j) {
-                List<String> data = dataArray[j];
-                if (i < data.size()) {
-                    row[j] = data.get(i);
-                }
-            }
-            out.add(row);
-        }
-
-        return out;
-    }
-
-//    public static void merge(List<String> one, List<String> two) {
-//        int len = one.size() > one.size() ? one.size() : two.size();
-//        for (int i = 0; i < len; ++i) {
-//            String[] row = new String[2];
-//            if (i < one.size()) {
-//                row[0] = one.get(i);
-//            } else {
-//                row[0] = "";
-//            }
-//
-//            if (i < two.size()) {
-//                row[1] = two.get(i);
-//            } else {
-//                row[1] = "";
-//            }
-//        }
-//    }
 }

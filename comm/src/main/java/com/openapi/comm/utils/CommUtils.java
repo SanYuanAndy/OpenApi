@@ -11,6 +11,8 @@ import android.text.TextUtils;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -141,5 +143,29 @@ public class CommUtils {
             e.printStackTrace();
         }
         return t;
+    }
+
+    public static List<String[]> merge(List<String>... dataArray) {
+        List<String[]> out = new ArrayList<>();
+        int len = 0;
+        for (int i = 0; i < dataArray.length; ++i) {
+            if (dataArray[i].size() > len) {
+                len = dataArray[i].size();
+            }
+        }
+
+        for (int i = 0; i < len; ++i) {
+            String[] row = new String[dataArray.length];
+            Arrays.fill(row, "");
+            for (int j = 0; j < row.length; ++j) {
+                List<String> data = dataArray[j];
+                if (i < data.size()) {
+                    row[j] = data.get(i);
+                }
+            }
+            out.add(row);
+        }
+
+        return out;
     }
 }
