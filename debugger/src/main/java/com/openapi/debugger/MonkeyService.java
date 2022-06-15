@@ -14,18 +14,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MonkeyService {
-    static String test = "[\n" +
-            "       {\"name\":\"\", \"type\":1, \"x\":1099,\"y\":245,\"alive\":1},\n" +
-            "       {\"name\":\"\", \"type\":0}\n" +
-            "       ]";
-    /*[
-       {"name":"", "type":1, "x":1099,"y":245, "alive":1},
-       {"name":"", "type":0}
-       ]
-     */
+    public static final String TAG = MonkeyService.class.getSimpleName();
 
-    public static void run(Context context) {
-        File root = new File("/sdcard/whitelist/monkey/");
+    private static boolean isRunning = false;
+    private static boolean isStopped = false;
+
+    private static Thread sWorkThread = null;
+
+    public static void stop() {
+        if (!isStopped) {
+            isStopped = true;
+            Thread t = sWorkThread;
+            if (t != null && t.getState() == Thread.State.TIMED_WAITING) {
+                t.interrupt();
+            }
+        }
+    }
+
+    public static boolean isRunning() {
+        return isRunning;
+    }
+
+    public static void run(Context context, String monkeyDir) {
+        if (isRunning) {
+            LogUtil.e(TAG, "is Running");
+            return;
+        }
+        isRunning = true;
+        isStopped = false;
+        sWorkThread = Thread.currentThread();
+
+        File root = new File(monkeyDir);
         File[] all = root.listFiles(new FileFilter() {
             @Override
             public boolean accept(File f) {
@@ -33,13 +52,23 @@ public class MonkeyService {
             }
         });
         for (File f : all) {
+            if (isStopped) {
+                break;
+            }
             String strJson = FileUtils.readStringFromFile(f.getPath());
             List<MonkeyShell.Cmd> cmdList = parseCmd(strJson);
             for (MonkeyShell.Cmd cmd : cmdList) {
+                if (isStopped) {
+                    break;
+                }
                 UIManager.getInstance().sendFloatingText(cmd.name);
                 cmd.execute(context.getApplicationContext());
             }
         }
+        UIManager.getInstance().sendFloatingText("运行结束");
+        isStopped = true;
+        isRunning = false;
+        sWorkThread = null;
     }
 
     public static List<MonkeyShell.Cmd> parseCmd(String strJson) {

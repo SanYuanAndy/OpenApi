@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.widget.Toast;
 
+import com.openapi.comm.utils.CommUtils;
 import com.openapi.comm.utils.DnsParser;
 import com.openapi.comm.utils.HttpManager;
 import com.openapi.comm.utils.LogUtil;
@@ -68,12 +69,28 @@ public class DemoCaseActivity extends DebuggerActivity {
         addAction(new ActionAdapter.Action("monkey") {
             @Override
             public boolean invoke() {
+
+                if (MonkeyService.isRunning()) {
+                    WorkHandler.showToast("正在运行中");
+                    return true;
+                }
+
                 WorkHandler.runBgThread(new Runnable() {
                     @Override
                     public void run() {
-                        MonkeyService.run(getApplication());
+                        MonkeyService.run(getApplication(), "/sdcard/whitelist/monkey/");
                     }
                 }, 0);
+                return false;
+            }
+        });
+
+        addAction(new ActionAdapter.Action("stopMonkey") {
+            @Override
+            public boolean invoke() {
+                if (MonkeyService.isRunning()) {
+                    MonkeyService.stop();
+                }
                 return false;
             }
         });

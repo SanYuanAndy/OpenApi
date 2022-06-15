@@ -18,7 +18,7 @@ public class BaseApplication extends Application {
     public void onCreate() {
         super.onCreate();
         sContext = this;
-        WorkHandler.init();
+        WorkHandler.init(this);
         MultiThemeSDK.getInstance().initial(this, 0);
         IPCProviderSDK.getInstance().init(this);
         DaemonService.start(this);
