@@ -47,6 +47,7 @@ allprojects {
                String sdk_out = getRootDir().getPath() + "/sdk_out"
                copy {
                    from("build/outputs/aar")
+                   include("*release.aar")
                    into(sdk_out)
                }
            }
