@@ -72,11 +72,12 @@ public class DnsAnalysisService {
             dnsList.add(info.dns);
         }
 
-        Map<String, Set<String>> map = DnsParser.getInstance().parseAllDns(dnsList, 1, 5000, new DnsParser.IProgress() {
+        Map<String, Set<String>> map = DnsParser.getInstance().parseAllDns(dnsList, 3, 5000, new DnsParser.IProgress() {
             @Override
-            public void onProgress(int total, int progress, int loop, int loopIndex) {
+            public int onProgress(int total, int progress, int loop, int loopIndex) {
                 String data = String.format("解析DNS (%d/%d) %d/%d", loopIndex, loop, progress, total);
                 UIManager.getInstance().sendFloatingText(data);
+                return 0;
             }
         });
 

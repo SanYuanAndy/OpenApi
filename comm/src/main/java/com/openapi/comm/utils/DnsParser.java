@@ -14,7 +14,10 @@ public class DnsParser {
     public static DnsParser sInstance = new DnsParser();
 
     public interface IProgress {
-        public void onProgress(int total, int progress, int loop, int loopIndex);
+        int CODE_OK = 0;
+        int CODE_INTERRUPTED = -1000;
+
+        int onProgress(int total, int progress, int loop, int loopIndex);
     }
 
     private DnsParser() {
@@ -42,6 +45,11 @@ public class DnsParser {
                                                 int repeatCnt, int durationMill,
                                                 IProgress progressCallBack) {
         Map<String, Set<String>> dnsIpInfoMap = new HashMap<>();
+        if (progressCallBack == null) {
+            return dnsIpInfoMap;
+        }
+
+
         for (int i = 0;;) {
 
             for (int j = 0; j < dnsList.size(); ++j) {
@@ -63,8 +71,10 @@ public class DnsParser {
                     ipSet.add(ip);
                 }
 
-                if (progressCallBack != null) {
-                    progressCallBack.onProgress(dnsList.size(), j + 1, repeatCnt, i + 1);
+                int code = progressCallBack.onProgress(dnsList.size(), j + 1, repeatCnt, i + 1);
+                if (code == IProgress.CODE_INTERRUPTED) {
+                    i = repeatCnt;
+                    break;
                 }
             }
 
@@ -72,14 +82,21 @@ public class DnsParser {
                 break;
             }
             i++;
-            LogUtil.e("checkWhitelist", i + "/" + repeatCnt);
-            try {
-                Thread.sleep(durationMill);
-            } catch (Exception e) {
-
+            synchronized (progressCallBack) {
+                try {
+                    progressCallBack.wait(durationMill);
+                } catch (Exception e) {
+                    break;
+                }
             }
         }
 
         return dnsIpInfoMap;
+    }
+
+    public void interrupt(IProgress progress) {
+        if (progress != null) {
+            progress.notifyAll();
+        }
     }
 }
