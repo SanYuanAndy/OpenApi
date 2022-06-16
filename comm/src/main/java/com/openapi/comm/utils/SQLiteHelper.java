@@ -49,6 +49,24 @@ public class SQLiteHelper {
         cursor.close();
     }
 
+    public void release() {
+        SQLiteDatabase db = mDB;
+        mDB = null;
+        if (db != null) {
+            try {
+                db.close();
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        release();
+        super.finalize();
+    }
+
     public static void query(Cursor cursor, final int col, final List<String> out) {
         query(cursor, new IQueryCallBack() {
             @Override
