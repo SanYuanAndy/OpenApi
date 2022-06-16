@@ -96,7 +96,9 @@ public class DnsParser {
 
     public void interrupt(IProgress progress) {
         if (progress != null) {
-            progress.notifyAll();
+            synchronized (progress) {
+                progress.notifyAll();
+            }
         }
     }
 }
