@@ -38,7 +38,13 @@ public class DnsAnalysisService {
         UIManager.getInstance().sendFloatingText("解析开始");
 
         File f = new File(cxt.getApplicationInfo().dataDir + "/bdfw.db");
-        SQLiteHelper helper = new SQLiteHelper(f.getPath());
+        SQLiteHelper helper = null;
+        try {
+            helper = new SQLiteHelper(f.getPath(), true);
+        } catch (Exception e) {
+            return;
+        }
+
         List<String> tables = helper.getTableList();
         CommUtils.println(tables);
 

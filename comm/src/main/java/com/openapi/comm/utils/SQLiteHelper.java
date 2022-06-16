@@ -14,8 +14,15 @@ public class SQLiteHelper {
         void onQuery(Cursor cursor);
     }
 
-    public SQLiteHelper (String path) {
-        mDB = open(path);
+    private SQLiteHelper () {
+
+    }
+
+    public SQLiteHelper (String path, boolean onlyRead) throws Exception {
+        mDB = open(path, onlyRead);
+        if (mDB == null) {
+            throw new Exception("open db error");
+        }
     }
 
     public List<String> getTableList() {
@@ -61,9 +68,17 @@ public class SQLiteHelper {
         cursor.close();
     }
 
-    public static SQLiteDatabase open(String path) {
+    public static SQLiteDatabase open(String path, boolean onlyReady) {
         File dbFile = new File(path);
-        SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
+        if (!dbFile.exists() || !dbFile.canRead()) {
+            return null;
+        }
+        SQLiteDatabase db = null;
+        if (onlyReady) {
+            db = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READONLY);
+        } else {
+            db = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
+        }
         return db;
     }
 }
