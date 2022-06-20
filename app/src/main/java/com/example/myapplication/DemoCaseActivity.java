@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.widget.Toast;
 
+import com.openapi.comm.ui.CommDialog;
 import com.openapi.comm.utils.CommUtils;
 import com.openapi.comm.utils.DnsParser;
 import com.openapi.comm.utils.HttpManager;
@@ -143,6 +144,23 @@ public class DemoCaseActivity extends DebuggerActivity {
                         DnsAnalysisService.run(getApplication());
                     }
                 }, 0);
+                return false;
+            }
+        });
+
+        addAction(new ActionAdapter.Action("弹窗") {
+            @Override
+            public boolean invoke() {
+                CommDialog dialog = new CommDialog.Builder(DemoCaseActivity.this).
+                        layoutId(R.layout.alert).title("注意").content("此操作不可恢复,确定要执行此操作吗?").
+                        callBack(new CommDialog.DialogCallBack() {
+                    @Override
+                    public void onClickOk() {
+                        WorkHandler.showToast("确认");
+                    }
+                }).
+                        build();
+                dialog.show();
                 return false;
             }
         });

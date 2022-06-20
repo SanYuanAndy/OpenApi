@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
 
     public void showDialog() {
         Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.dialog_main);
+        dialog.setContentView(R.layout.alert);
         dialog.show();
     }
 
