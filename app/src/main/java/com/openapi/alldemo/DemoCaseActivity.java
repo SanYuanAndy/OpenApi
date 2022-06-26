@@ -1,17 +1,25 @@
-package com.example.myapplication;
+package com.openapi.alldemo;
 
+import android.content.ContentResolver;
+import android.content.Intent;
+import android.provider.Settings;
 import android.widget.Toast;
 
+import com.example.myapplication.R;
+import com.openapi.comm.mail.Mail;
 import com.openapi.comm.ui.CommDialog;
-import com.openapi.comm.utils.CommUtils;
 import com.openapi.comm.utils.DnsParser;
+import com.openapi.comm.utils.FileUtils;
 import com.openapi.comm.utils.HttpManager;
+import com.openapi.comm.utils.JSONParser;
 import com.openapi.comm.utils.LogUtil;
 import com.openapi.comm.utils.WorkHandler;
 import com.openapi.debugger.ActionAdapter;
 import com.openapi.debugger.DebuggerActivity;
 import com.openapi.debugger.DnsAnalysisService;
 import com.openapi.debugger.MonkeyService;
+
+import org.json.JSONObject;
 
 import java.net.InetAddress;
 import java.net.Socket;
@@ -165,6 +173,56 @@ public class DemoCaseActivity extends DebuggerActivity {
             }
         });
 
+        addAction(new ActionAdapter.Action("关闭语音权限") {
+            @Override
+            public boolean invoke() {
+                setVoiceState(false, "当前语音不可用");
+                return false;
+            }
+        });
+
+        addAction(new ActionAdapter.Action("打开语音权限") {
+            @Override
+            public boolean invoke() {
+                setVoiceState(true, "");
+                return false;
+            }
+        });
+
+        addAction(new ActionAdapter.Action("懂你模式广播") {
+            @Override
+            public boolean invoke() {
+                Intent intent = new Intent("com.baidu.duerosauto.scenemode_controler.call");
+                intent.putExtra("cmd", "open_mode_do_not_disturb");
+                sendBroadcast(intent);
+                return false;
+            }
+        });
+
+        addAction(new ActionAdapter.Action("发送邮件") {
+            @Override
+            public boolean invoke() {
+                WorkHandler.runBgThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        sendMail();
+                    }
+                }, 0);
+                return false;
+            }
+        });
+    }
+
+    private void setVoiceState(boolean enable, String tts) {
+        ContentResolver resolver = getContentResolver();
+        JSONObject json = new JSONObject();
+        try {
+            json.put("vrState", enable);
+            json.put("tts", tts);
+        } catch (Exception e) {
+
+        }
+        Settings.Global.putString(resolver, "voice.permission.enable", json.toString());
     }
 
     public static String getDebugLabel() {
@@ -187,6 +245,13 @@ public class DemoCaseActivity extends DebuggerActivity {
             LogUtil.e("checkWhitelist", e.toString());
             e.printStackTrace();
         }
+    }
+
+    private void sendMail() {
+        String strMailJson = FileUtils.readStringFromFile("/sdcard/mail.json");
+        Mail mail = JSONParser.parseDeep(Mail.class, strMailJson);
+        boolean ret = mail.send();
+        LogUtil.e("Mail", "ret=" + ret);
     }
 
 

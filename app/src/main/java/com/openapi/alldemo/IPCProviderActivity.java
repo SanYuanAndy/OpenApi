@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.openapi.alldemo;
 
 import android.content.ContentResolver;
 import android.database.ContentObserver;

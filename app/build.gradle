@@ -6,11 +6,10 @@ android {
     defaultConfig {
         applicationId getProductProperty("applicationId", "com.open.utils.case.all")
         minSdkVersion 19
+        //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 27
-        versionCode 1
-        versionName getProductVersion(false)
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        versionCode getProductProperty("VERSION_CODE", 100)
+        versionName getProductProperty("VERSION_NAME", "" + versionCode)
 
         String sAction = getProductProperty("BootAction", "android.intent.action.BOOT_COMPLETED")
         String sPkgNamePrefix = getProductProperty("dns_filter_pkg_name_prefix", "")
@@ -68,9 +67,6 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.navigation:navigation-fragment:2.1.0'
     implementation 'androidx.navigation:navigation-ui:2.1.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation project(":multitheme")
     implementation project(":comm")
     implementation project(':ipc')

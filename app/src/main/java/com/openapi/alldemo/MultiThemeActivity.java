@@ -1,21 +1,22 @@
-package com.example.myapplication;
+package com.openapi.alldemo;
 
 import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
 
+import com.example.myapplication.R;
 import com.openapi.comm.utils.MarqueeTextView;
 import com.openapi.multitheme.MultiThemeSDK;
 
-public class MainActivity extends Activity {
-    private static final String TAG = MainActivity.class.getSimpleName();
+public class MultiThemeActivity extends Activity {
+    private static final String TAG = MultiThemeActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        MarqueeTextView tv = findViewById(R.id.web);
+        setContentView(R.layout.activity_multitheme);
+        MarqueeTextView tv = findViewById(R.id.tv_auto_scroll);
         tv.setSpeedLevel(0.1f);
     }
 
@@ -34,7 +35,7 @@ public class MainActivity extends Activity {
 
     public void showDialog() {
         Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.alert);
+        dialog.setContentView(R.layout.dialog_multitheme);
         dialog.show();
     }
 

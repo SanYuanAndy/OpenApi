@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.openapi.alldemo;
 
 import android.app.Application;
 import android.app.Instrumentation;

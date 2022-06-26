@@ -6,48 +6,36 @@
     android:layout_height="match_parent"
     android:background="@color/theme_main_bg"
     android:orientation="vertical"
-    tools:context="com.example.myapplication.MainActivity">
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    tools:context="com.openapi.alldemo.MultiThemeActivity">
+
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="返回"
-        android:textColor="@color/theme_main_text_color"
-        android:onClick="onBack"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp"/>
-    <Button
-        android:layout_width="wrap_content"
+        android:layout_width="180dp"
         android:layout_height="wrap_content"
         android:text="切换主题"
         android:textColor="@color/theme_main_text_color"
         android:onClick="onThemeChange"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="12dp"/>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="弹窗"
-        android:textColor="@color/theme_main_text_color"
-        android:onClick="onShowDialog"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp"/>
+
     <ImageView
         android:id="@+id/icon0"
         android:background="#ffffffff"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
         android:src="@mipmap/theme_ic_launcher"/>
 
     <com.openapi.comm.utils.MarqueeTextView
-        android:id="@+id/web"
-        android:layout_width="128dp"
-        android:layout_height="match_parent"
+        android:id="@+id/tv_auto_scroll"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="你好呀今天天气怎么样哦"
+        android:text="你好小T, 你知道今天天气怎么样吗?请查一下哦"
         android:clickable="true"
         android:textSize="32sp"
         android:textColor="@color/theme_main_text_color">
     </com.openapi.comm.utils.MarqueeTextView>
+
 </LinearLayout>

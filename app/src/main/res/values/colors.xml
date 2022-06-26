@@ -3,7 +3,7 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
-    <color name="theme_main_text_color_2">#03DAC5</color>
+    <color name="theme_main_text_color_2">#ff0000ff</color>
     <color name="theme_main_bg">#ffdddddd</color>
     <color name="theme_main_bg_1">#ffffffff</color>
     <color name="theme_main_bg_2">#ff777777</color>
