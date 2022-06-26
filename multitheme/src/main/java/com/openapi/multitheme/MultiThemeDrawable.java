@@ -28,15 +28,10 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.View;
 
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.core.graphics.drawable.TintAwareDrawable;
-
 import com.openapi.comm.utils.LogUtil;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
 /**
  * Drawable which delegates all calls to its wrapped {@link Drawable}.

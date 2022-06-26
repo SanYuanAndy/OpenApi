@@ -1,6 +1,5 @@
 package com.openapi.multitheme;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.res.ColorStateList;
@@ -19,18 +18,11 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import com.openapi.comm.utils.LogUtil;
-import com.openapi.comm.utils.ReflectUtils;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,7 +36,6 @@ public class MultiTheme {
             super(assets, metrics, config);
         }
 
-        @NonNull
         @Override
         public XmlResourceParser getLayout(int id) throws NotFoundException {
             XmlResourceParser parser = super.getLayout(id);
@@ -86,7 +77,7 @@ public class MultiTheme {
         }
 
         @Override
-        public int getColorForState(@Nullable int[] stateSet, int defaultColor) {
+        public int getColorForState(int[] stateSet, int defaultColor) {
             // LogUtil.d(TAG, "zzz :" + Arrays.toString(stateSet));
             int color = defaultColor;
 
@@ -178,12 +169,12 @@ public class MultiTheme {
 
 
         @Override
-        public View onCreateView(@NonNull String name, @NonNull Context context, @NonNull AttributeSet attrs) {
+        public View onCreateView( String name,  Context context,  AttributeSet attrs) {
             return null;
         }
 
         @Override
-        public View onCreateView(@Nullable final View parent, @NonNull String name, @NonNull Context context, @NonNull AttributeSet attrs) {
+        public View onCreateView(final View parent,  String name,  Context context,  AttributeSet attrs) {
             LogUtil.d(TAG, "parent:" + parent + ", view:" + name);
             View view = null;
             try {

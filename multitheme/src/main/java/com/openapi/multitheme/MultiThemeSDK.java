@@ -6,8 +6,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 
-import androidx.annotation.NonNull;
-
 import com.openapi.comm.utils.DefaultActivityLifeCallBack;
 
 
@@ -34,13 +32,13 @@ public class MultiThemeSDK {
 
        app.registerActivityLifecycleCallbacks(new DefaultActivityLifeCallBack() {
            @Override
-           public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
+           public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
                LayoutInflater layoutInflater = activity.getLayoutInflater();
                layoutInflater.setFactory2(MultiTheme.LayoutInflaterFactory.create(layoutInflater));
            }
 
            @Override
-           public void onActivityDestroyed(@NonNull Activity activity) {
+           public void onActivityDestroyed(Activity activity) {
                MultiTheme.LayoutInflaterFactory.destroyFactory(activity);
            }
 
