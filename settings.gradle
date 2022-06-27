@@ -4,6 +4,6 @@ include ':ipc'
 include ':comm'
 include ':multitheme'
 //include ':inject'
-include ':openapi'
+include ':layoutMarker'
 include ':app'
 rootProject.name = "OpenApi"

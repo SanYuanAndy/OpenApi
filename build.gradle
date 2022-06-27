@@ -41,18 +41,41 @@ allprojects {
         jcenter()
     }
 
-    if (getProject().getName() != "app" && getProject().getName() != getRootProject().getName()) {
+    List<String> ignores = new ArrayList<>()
+    ignores.add("app")
+    ignores.add(getRootProject().getName())
+
+    String sdk_out_root = getRootDir().getPath() + "/sdk_out/"
+    if (!ignores.contains(project.getName())) {
        task makeAar {
            doLast {
-               String sdk_out = getRootDir().getPath() + "/sdk_out"
+               String aar_out = sdk_out_root + "/aar/"
                copy {
                    from("build/outputs/aar")
                    include("*release.aar")
-                   into(sdk_out)
+                   into(aar_out)
                }
            }
        }
        makeAar.dependsOn('assembleRelease')
+
+       task makeJar {
+           doLast {
+               String jar_out = sdk_out_root + "/jar/"
+               String jar_path = projectDir.absolutePath + "/build/intermediates/aar_main_jar/release/"
+               copy {
+                   from(jar_path)
+                   include("classes.jar")
+                   into(jar_out)
+                   rename {
+                       "classess.jar"
+                       "${project.name}.jar"
+                   }
+               }
+           }
+       }
+       makeJar.dependsOn('assembleRelease')
+
     }
 }
 
