@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken
 import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtMethod
+import javassist.NotFoundException
 import org.gradle.api.Project
 
 import java.lang.reflect.Type
@@ -126,7 +127,11 @@ public class ClassInjector {
                                   List<SourceCode> sourceCodes,
                                   List<LocalVariable> localVariables) {
             try {
-                CtMethod ctMethod = ctClass.getDeclaredMethod(method)
+                String[] tmp = method.split("&");
+                String methodName = tmp.length > 0 ? tmp[0] : ""
+                String methodSignature = tmp.length > 1 ? tmp[1] : ""
+
+                CtMethod ctMethod = findMethodByName(ctClass, methodName, methodSignature)
 
                 printMsg(ctMethod.signature)
 
@@ -173,5 +178,27 @@ public class ClassInjector {
                 break
         }
         return ctType
+    }
+
+    public static CtMethod findMethodByName(CtClass ctClass,
+                                            String name,
+                                            String signature) throws NotFoundException{
+
+        if (signature == null || signature.length() == 0) {
+            return ctClass.getDeclaredMethod(name)
+        }
+
+        CtMethod ret = null;
+        CtMethod[] methods = ctClass.getDeclaredMethods(name)
+        if (methods != null && methods.size() > 0) {
+            ret = methods[0]
+        }
+
+        for (CtMethod method : methods) {
+            if (method.signature.equals(signature)) {
+                return method
+            }
+        }
+        return ret;
     }
 }
