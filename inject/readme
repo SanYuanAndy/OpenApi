@@ -1,16 +1,24 @@
-//apply plugin: 'ClassInject'
+插件实现步骤
+1、声明插件名称和插件实现类的路径
+   在resources/META-INF/gradle-plugins目录下新建XXX.properties文件， XXX即插件名称
+   文件中写入implementation-class=xxx.xxx.xxx.XXX声明插件实现类的路径，xxx.xxx.xxx.XXX即插件实现类的路径
+2、定义插件实现类
+3、定义Transform实现类, 并且在插件实现类中注册该类的实例
+4、实现具体业务类, 并且在Transform实现类中应用
+
+插件使用步骤
+1、buildscript中声明仓库和依赖
 buildscript {
     repositories {
-        google()
-        jcenter()
         maven {
-            String homeDir = System.getenv("HOME") + "/plugin/inject"
-            String sUrl = String.format("file:%s", homeDir)
             url sUrl
         }
     }
 
     dependencies {
-        classpath 'com.open.utils:class-injector:1.0'
+        classpath 'group:archivesBaseName:version'
     }
 }
+
+2、project中应用插件
+apply plugin: '插件名称'

@@ -1,0 +1,36 @@
+[
+  {
+    "cls":"com.openapi.alldemo.BaseApplication",
+    "cmd":1,
+    "method":"onCreate",
+    "localVariables":[
+      {
+        "name":"begin",
+        "type":"long"
+      },
+      {
+        "name":"cost",
+        "type":"long"
+      }
+    ],
+    "sourceCodes":[
+        {
+          "code":"android.util.Log.e(\"BaseApplication\", \"onCreate\");",
+          "lineNum":-1
+        },
+        {
+          "code":"begin = java.lang.System.currentTimeMillis();",
+          "lineNum":-1
+        },
+        {
+          "code":"cost = java.lang.System.currentTimeMillis() - begin;",
+          "lineNum":-2
+        },
+        {
+          "code":"android.util.Log.e(\"BaseApplication\", \"cost:\" + cost);",
+          "lineNum":-2
+        }
+    ]
+  },
+  {}
+]

@@ -11,7 +11,6 @@ import com.android.build.api.transform.TransformInput
 import com.android.build.api.transform.TransformOutputProvider
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.utils.FileUtils
-import com.plugin.inject.ClassInjector
 import org.gradle.api.Project
 
 public class ClassInjectTransform extends Transform {
@@ -70,21 +69,23 @@ public class ClassInjectTransform extends Transform {
     void transform(Context context, Collection<TransformInput> inputs, Collection<TransformInput> referencedInputs,
                    TransformOutputProvider outputProvider, boolean isIncremental) throws IOException, TransformException, InterruptedException {
 
-        System.out.println("----------Transform begin----------- : " + inputs)
+        System.out.println("----------Transform begin----------- ")
         // Transform 的 inputs 分为两种类型，一直是目录，一种是 jar 包。需要分开遍历
 
         inputs.each { TransformInput input ->
 
             input.directoryInputs.each { DirectoryInput dirInput ->
+                System.out.println("dir input:" + dirInput.file.absolutePath)
                 ClassInjector.inject(dirInput.file.absolutePath, project)
                 def dest = outputProvider.getContentLocation(dirInput.name, dirInput.contentTypes, dirInput.scopes, Format.DIRECTORY)
-                System.out.println("target : " + dest)
+                System.out.println("dir output:" + dest)
                 FileUtils.copyDirectory(dirInput.file, dest)
             }
 
             input.jarInputs.each { JarInput jarInput ->
                 def dest = outputProvider.getContentLocation(jarInput.name, jarInput.contentTypes, jarInput.scopes, Format.JAR)
-                System.out.println("target : " + dest)
+                System.out.println("jar input:" + jarInput.file.absolutePath)
+                System.out.println("jar output:" + dest)
                 FileUtils.copyFile(jarInput.file, dest)
             }
 
