@@ -58,8 +58,8 @@ class MailSender {
             text.setContent(mail.getContent(), "text/html;charset=UTF-8");
             multipart.addBodyPart(text);
 
-            MimeBodyPart attach = new MimeBodyPart();
             for (String fileName : mail.getAttachFileNames()) {
+                MimeBodyPart attach = new MimeBodyPart();
                 File file = new File(fileName);
                 FileDataSource ds = new FileDataSource(file);
                 DataHandler dh = new DataHandler(ds);

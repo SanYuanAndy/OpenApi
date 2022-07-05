@@ -1,5 +1,11 @@
 package com.openapi.comm.mail;
 
+import android.content.Context;
+import android.text.TextUtils;
+
+import com.openapi.comm.utils.ZipUtils;
+
+import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
@@ -14,6 +20,8 @@ public class Mail {
     private String subject;
     private String content;
     private List<String> attachFileNames;
+    private String attachPassword;
+    private String attachName;
 
     public Properties getProperties() {
         Properties p = new Properties();
@@ -103,8 +111,39 @@ public class Mail {
         this.attachFileNames = attachFileNames;
     }
 
-    public boolean send() {
+    public void setAttachPassword(String attachPassword) {
+        this.attachPassword = attachPassword;
+    }
+
+    public void setAttachName(String attachName) {
+        this.attachName = attachName;
+    }
+
+    public boolean send(Context context) {
+        check(context);
         return MailSender.send(this);
+    }
+
+    private void check(Context context) {
+        if (!TextUtils.isEmpty(attachPassword)) {
+            if (context != null) {
+                encrypt(context.getCacheDir().getPath(), attachPassword);
+            }
+        }
+    }
+
+    private void encrypt(String zipTmpDir, String password) {
+        if (attachFileNames != null && !attachFileNames.isEmpty()) {
+            if (TextUtils.isEmpty(attachName)) {
+                attachName = new File(attachFileNames.get(0)).getName();
+            }
+            File tmpZipFile = new File(zipTmpDir,  attachName + ".zip");
+            boolean ret = ZipUtils.zip(attachFileNames, tmpZipFile.getPath(), password);
+            if (ret) {
+                attachFileNames.clear();
+                attachFileNames.add(tmpZipFile.getPath());
+            }
+        }
     }
 
 }
