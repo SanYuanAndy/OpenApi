@@ -3,7 +3,7 @@ include ':debugger'
 include ':ipc'
 include ':comm'
 include ':multitheme'
-//include ':inject'
+include ':inject'
 include ':layoutMarker'
 include ':app'
 rootProject.name = "OpenApi"

@@ -5,7 +5,7 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
 
-import com.example.myapplication.R;
+
 import com.openapi.comm.utils.MarqueeTextView;
 import com.openapi.multitheme.MultiThemeSDK;
 

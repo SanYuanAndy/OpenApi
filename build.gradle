@@ -27,12 +27,6 @@ buildscript {
         }
     }
 }
-
-if (rootProject.buildscript.getRepositories().findByName("localInject") != null) {
-    project("app") {
-        apply plugin: 'ClassInject'
-    }
-}
 /******inject***********/
 
 allprojects {

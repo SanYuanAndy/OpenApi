@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.provider.Settings;
 import android.widget.Toast;
 
-import com.example.myapplication.R;
+import com.openapi.alldemo.R;
 import com.openapi.comm.mail.Mail;
 import com.openapi.comm.ui.CommDialog;
 import com.openapi.comm.utils.DnsParser;
