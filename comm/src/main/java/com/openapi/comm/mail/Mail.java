@@ -111,8 +111,16 @@ public class Mail {
         this.attachFileNames = attachFileNames;
     }
 
+    public String getAttachPassword() {
+        return attachPassword;
+    }
+
     public void setAttachPassword(String attachPassword) {
         this.attachPassword = attachPassword;
+    }
+
+    public String getAttachName() {
+        return attachName;
     }
 
     public void setAttachName(String attachName) {

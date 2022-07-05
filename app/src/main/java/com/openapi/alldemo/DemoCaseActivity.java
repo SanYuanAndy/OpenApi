@@ -14,6 +14,7 @@ import com.openapi.comm.utils.HttpManager;
 import com.openapi.comm.utils.JSONParser;
 import com.openapi.comm.utils.LogUtil;
 import com.openapi.comm.utils.WorkHandler;
+import com.openapi.comm.utils.ZipUtils;
 import com.openapi.debugger.ActionAdapter;
 import com.openapi.debugger.DebuggerActivity;
 import com.openapi.debugger.DnsAnalysisService;
@@ -21,6 +22,7 @@ import com.openapi.debugger.MonkeyService;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -250,7 +252,14 @@ public class DemoCaseActivity extends DebuggerActivity {
     private void sendMail() {
         String strMailJson = FileUtils.readStringFromFile("/sdcard/mail.json");
         Mail mail = JSONParser.parseDeep(Mail.class, strMailJson);
-        boolean ret = mail.send();
+
+        List<String> attachNames = new ArrayList<>();
+        attachNames.add("/sdcard/whitelist/history/new-dns-ip-2022-07-04.csv");
+        attachNames.add("/sdcard/whitelist/history/new-dns-ip-2022-06-09.csv");
+
+        mail.setAttachFileNames(attachNames);
+        // mail.setAttachPassword("12345678");
+        boolean ret = mail.send(getApplicationContext());
         LogUtil.e("Mail", "ret=" + ret);
     }
 
