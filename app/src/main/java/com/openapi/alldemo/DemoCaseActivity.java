@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import com.openapi.alldemo.R;
 import com.openapi.comm.mail.Mail;
+import com.openapi.comm.mail.MailBox;
 import com.openapi.comm.ui.CommDialog;
 import com.openapi.comm.utils.DnsParser;
 import com.openapi.comm.utils.FileUtils;
@@ -208,6 +209,19 @@ public class DemoCaseActivity extends DebuggerActivity {
                     @Override
                     public void run() {
                         sendMail();
+                    }
+                }, 0);
+                return false;
+            }
+        });
+
+        addAction(new ActionAdapter.Action("接收邮件") {
+            @Override
+            public boolean invoke() {
+                WorkHandler.runBgThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        new MailBox();
                     }
                 }, 0);
                 return false;
