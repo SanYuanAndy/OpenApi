@@ -17,6 +17,7 @@ import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.event.MessageCountAdapter;
 import javax.mail.event.MessageCountEvent;
+import javax.mail.internet.InternetAddress;
 
 public class MailBox {
     private static MailBox sInstance = new MailBox();
@@ -33,6 +34,8 @@ public class MailBox {
     private static final int CMD_IDLE = 1100;
     private MailBoxConf mMailBoxConf;
     private boolean mNetConnected;
+    private INewMailListener mNewMailListener;
+
 
     private MailBox() {
 
@@ -42,7 +45,11 @@ public class MailBox {
         return sInstance;
     }
 
-    public void init(Context context, MailBoxConf conf) {
+    public static interface INewMailListener {
+        void onNewMailReceived(String subject, String sender);
+    }
+
+    public void init(Context context, MailBoxConf conf, INewMailListener listener) {
         if (conf == null) {
             return;
         }
@@ -52,6 +59,7 @@ public class MailBox {
         }
 
         mMailBoxConf = conf;
+        mNewMailListener = listener;
         HandlerThread thread = new HandlerThread("MaiBox");
         thread.start();
         mWorkHandler = new Handler(thread.getLooper()) {
@@ -138,11 +146,12 @@ public class MailBox {
             Store store = session.getStore("imap");
             store.connect(mMailBoxConf.userName, mMailBoxConf.password);
             Folder folder = store.getFolder("INBOX");
-            folder.open(Folder.READ_WRITE);
+            folder.open(Folder.READ_ONLY);
             folder.addMessageCountListener(new MessageCountAdapter() {
                 @Override
                 public void messagesAdded(MessageCountEvent e) {
                     LogUtil.e(TAG, "messagesAdded:" + e);
+                    onNewMailReceive(e);
                 }
             });
             mStore = store;
@@ -189,6 +198,27 @@ public class MailBox {
         if (oldConnected != isConnected && isConnected) {
             connect();
         }
+    }
+
+    private void onNewMailReceive(MessageCountEvent event) {
+        Message[] messages = event.getMessages();
+        if (messages == null) {
+            return;
+        }
+        LogUtil.d(TAG, "onNewMailReceive begin");
+        for (Message message : messages) {
+            try {
+                String subject = message.getSubject();
+                InternetAddress address = (InternetAddress) message.getFrom()[0];
+                INewMailListener listener = mNewMailListener;
+                if (listener != null) {
+                    listener.onNewMailReceived(subject, address.getAddress());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        LogUtil.d(TAG, "onNewMailReceive end");
     }
 
     private void reConnect() {
