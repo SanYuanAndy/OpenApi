@@ -29,6 +29,7 @@ public class MailBox {
     private static final int CMD_CONNECT = 1000;
     private static final int CMD_FETCH = 1001;
     private static final int CMD_RECONNECT = 1002;
+    private static final int CMD_CLOSE = 1003;
     private static final int CMD_NET_STATE_CHANGED = 1010;
 
     private static final int CMD_IDLE = 1100;
@@ -104,6 +105,20 @@ public class MailBox {
         mWorkHandler.sendEmptyMessageDelayed(CMD_FETCH, 0);
     }
 
+    public void close() {
+        if (!isInit()) {
+            return;
+        }
+        mWorkHandler.sendEmptyMessageDelayed(CMD_CLOSE, 0);
+    }
+
+    public void restart() {
+        if (!isInit()) {
+            return;
+        }
+        mWorkHandler.sendEmptyMessageDelayed(CMD_CONNECT, 0);
+    }
+
     private void handleCmdMsg(android.os.Message msg) {
         if (msg == null) {
             return;
@@ -121,6 +136,9 @@ public class MailBox {
                 break;
             case CMD_NET_STATE_CHANGED:
                 onNetChanged(msg.arg1 == 1, msg.arg2);
+                break;
+            case CMD_CLOSE:
+                reset();
                 break;
         }
     }
