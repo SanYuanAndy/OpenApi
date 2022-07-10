@@ -36,6 +36,7 @@ public class MailBox {
     private MailBoxConf mMailBoxConf;
     private boolean mNetConnected;
     private INewMailListener mNewMailListener;
+    private boolean mOperating = false;
 
 
     private MailBox() {
@@ -159,12 +160,14 @@ public class MailBox {
             props.put("mail.imap.host", mMailBoxConf.serverHost);
             props.put("mail.imap.ssl.enable", mMailBoxConf.ssl);
             props.put("mail.imap.port", mMailBoxConf.serverPort);
+            props.put("mail.debug", "true");
             Session session = Session.getDefaultInstance(props, null);
 
             Store store = session.getStore("imap");
             store.connect(mMailBoxConf.userName, mMailBoxConf.password);
+            mStore = store;
             Folder folder = store.getFolder("INBOX");
-            folder.open(Folder.READ_ONLY);
+            folder.open(Folder.READ_WRITE);
             folder.addMessageCountListener(new MessageCountAdapter() {
                 @Override
                 public void messagesAdded(MessageCountEvent e) {
@@ -172,7 +175,6 @@ public class MailBox {
                     onNewMailReceive(e);
                 }
             });
-            mStore = store;
             mFolder = folder;
             startIdle();
         } catch (Exception e) {
@@ -198,6 +200,15 @@ public class MailBox {
                 e.printStackTrace();
                 onError(e);
                 break;
+            }
+            synchronized (mIdleHandler) {
+                while (mOperating) {
+                    try {
+                        mIdleHandler.wait(500);
+                    } catch (Exception e) {
+
+                    }
+                }
             }
             LogUtil.e(TAG, "idle end");
         }
@@ -240,34 +251,35 @@ public class MailBox {
     }
 
     private void reConnect() {
-        reset();
-        connect();
+        boolean ret = reset();
+        mWorkHandler.sendEmptyMessageDelayed(CMD_CONNECT, ret ? 30*1000 : 0);
     }
 
-    private void reset() {
+    private boolean reset() {
+        boolean reallyClosed = false;
         Folder folder = mFolder;
         mFolder = null;
         if (folder != null) {
-            if (folder.isOpen()) {
-                try {
-                    folder.close(false);
-                } catch (Exception e) {
+            try {
+                folder.close(false);
+                reallyClosed = true;
+            } catch (Exception e) {
                     e.printStackTrace();
-                }
             }
         }
 
         Store store = mStore;
         mStore = null;
         if (store != null) {
-            if (store.isConnected()) {
-                try {
-                    store.close();
-                } catch (Exception e) {
+            try {
+                store.close();
+                reallyClosed = true;
+            } catch (Exception e) {
                     e.printStackTrace();
-                }
             }
         }
+        LogUtil.e(TAG, "reset :" + reallyClosed);
+        return reallyClosed;
     }
 
     private void fetch() {
@@ -277,13 +289,20 @@ public class MailBox {
             return;
         }
 
+        mOperating = true;
+
         try {
             Message messages[] = mFolder.getMessages();
             if (messages != null) {
-                Log.d(TAG, "Messages length: " + messages.length);
+                Log.d(TAG, "Messages length: " + messages.length + ", " + mFolder.hasNewMessages());
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        mOperating = false;
+        synchronized (mIdleHandler) {
+            mIdleHandler.notifyAll();
         }
     }
 }
