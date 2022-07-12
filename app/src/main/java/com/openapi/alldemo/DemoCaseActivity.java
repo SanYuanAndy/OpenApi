@@ -8,6 +8,7 @@ import android.widget.Toast;
 import com.openapi.alldemo.R;
 import com.openapi.comm.mail.Mail;
 import com.openapi.comm.mail.MailBox;
+import com.openapi.comm.mail.MailBoxConf;
 import com.openapi.comm.ui.CommDialog;
 import com.openapi.comm.utils.DnsParser;
 import com.openapi.comm.utils.FileUtils;
@@ -29,6 +30,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingFormatArgumentException;
 import java.util.Set;
 
 public class DemoCaseActivity extends DebuggerActivity {
@@ -215,13 +217,59 @@ public class DemoCaseActivity extends DebuggerActivity {
             }
         });
 
-        addAction(new ActionAdapter.Action("接收邮件") {
+        addAction(new ActionAdapter.Action("打开邮箱") {
             @Override
             public boolean invoke() {
                 WorkHandler.runBgThread(new Runnable() {
                     @Override
                     public void run() {
-                        new MailBox();
+                        String strMailJson = FileUtils.readStringFromFile("/sdcard/mail.json");
+                        Mail mail = JSONParser.parseDeep(Mail.class, strMailJson);
+                        MailBoxConf conf = MailBoxConf.createImapConf(mail);
+                        MailBox.getBox().init(getBaseContext(), conf, new MailBox.INewMailListener() {
+                            @Override
+                            public void onNewMailReceived(String subject, String sender) {
+                                LogUtil.d("XXX", "onNewMailReceive:" + subject + "," + sender);
+                            }
+                        });
+                    }
+                }, 0);
+                return false;
+            }
+        });
+        addAction(new ActionAdapter.Action("拉取邮件") {
+            @Override
+            public boolean invoke() {
+                WorkHandler.runBgThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        MailBox.getBox().fetchAll();
+                    }
+                }, 0);
+                return false;
+            }
+        });
+
+        addAction(new ActionAdapter.Action("重新打开邮箱") {
+            @Override
+            public boolean invoke() {
+                WorkHandler.runBgThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        MailBox.getBox().restart();
+                    }
+                }, 0);
+                return false;
+            }
+        });
+
+        addAction(new ActionAdapter.Action("关闭邮箱") {
+            @Override
+            public boolean invoke() {
+                WorkHandler.runBgThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        MailBox.getBox().close();
                     }
                 }, 0);
                 return false;
@@ -268,11 +316,12 @@ public class DemoCaseActivity extends DebuggerActivity {
         Mail mail = JSONParser.parseDeep(Mail.class, strMailJson);
 
         List<String> attachNames = new ArrayList<>();
-        attachNames.add("/sdcard/whitelist/history/new-dns-ip-2022-07-04.csv");
-        attachNames.add("/sdcard/whitelist/history/new-dns-ip-2022-06-09.csv");
-
+        attachNames.add("/sdcard/mail/111.txt");
+        attachNames.add("/sdcard/mail/222.txt");
         mail.setAttachFileNames(attachNames);
-        // mail.setAttachPassword("12345678");
+        mail.setSubject("111");
+        mail.setContent("333");
+        mail.setAttachPassword("12345678");
         boolean ret = mail.send(getApplicationContext());
         LogUtil.e("Mail", "ret=" + ret);
     }
