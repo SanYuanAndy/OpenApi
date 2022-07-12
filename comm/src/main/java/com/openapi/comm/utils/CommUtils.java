@@ -3,6 +3,7 @@ package com.openapi.comm.utils;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
@@ -167,5 +168,17 @@ public class CommUtils {
         }
 
         return out;
+    }
+
+    public static String getVersionName(Context context) {
+        String versionName = "";
+        try {
+            PackageInfo info = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            versionName = info.versionName;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return versionName;
     }
 }

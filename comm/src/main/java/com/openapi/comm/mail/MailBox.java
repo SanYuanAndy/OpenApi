@@ -3,12 +3,18 @@ package com.openapi.comm.mail;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.text.TextUtils;
 import android.util.Log;
 
+import com.openapi.comm.utils.CommUtils;
 import com.openapi.comm.utils.LogUtil;
 import com.openapi.comm.utils.NetTools;
+import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.IMAPFolder;
+import com.sun.mail.imap.protocol.IMAPProtocol;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import javax.mail.Folder;
 import javax.mail.FolderClosedException;
@@ -33,10 +39,18 @@ public class MailBox {
     private static final int CMD_NET_STATE_CHANGED = 1010;
 
     private static final int CMD_IDLE = 1100;
+    private static final int CMD_NOOP = 1101;
+
+    private static final int NOOP_DURATION_MILL = 30 * 1000;
+    private static final int KEEP_ALIVE_DURATION_MILL = 3 * 60 * 1000;
+    private static final int KEEP_ALIVE_DURATION_COUNT_MAX = KEEP_ALIVE_DURATION_MILL / NOOP_DURATION_MILL;
+
     private MailBoxConf mMailBoxConf;
     private boolean mNetConnected;
     private INewMailListener mNewMailListener;
     private boolean mOperating = false;
+    private Map<String, String> mClientParams = new HashMap<>();
+    private int mNoopCount = 0;
 
 
     private MailBox() {
@@ -79,6 +93,9 @@ public class MailBox {
                     case CMD_IDLE:
                         idle();
                         break;
+                    case CMD_NOOP:
+                        noop();
+                        break;
                 }
             }
         };
@@ -95,6 +112,13 @@ public class MailBox {
                 mWorkHandler.sendMessageDelayed(message, 500);
             }
         });
+
+        String clientName = TextUtils.isEmpty(mMailBoxConf.clientName) ?
+                context.getPackageName() : mMailBoxConf.clientName;
+        String clientVersion = TextUtils.isEmpty(mMailBoxConf.clientVersion) ?
+                CommUtils.getVersionName(context) : mMailBoxConf.clientVersion;
+        mClientParams.put("name", clientName);
+        mClientParams.put("version", clientVersion);
 
         mWorkHandler.sendEmptyMessage(CMD_CONNECT);
     }
@@ -167,6 +191,15 @@ public class MailBox {
             store.connect(mMailBoxConf.userName, mMailBoxConf.password);
             mStore = store;
             Folder folder = store.getFolder("INBOX");
+
+            ((IMAPFolder) folder).doCommand(new IMAPFolder.ProtocolCommand() {
+                @Override
+                public Object doCommand(IMAPProtocol protocol) throws ProtocolException {
+                    protocol.id(mClientParams);
+                    return null;
+                }
+            });
+
             folder.open(Folder.READ_WRITE);
             folder.addMessageCountListener(new MessageCountAdapter() {
                 @Override
@@ -183,8 +216,48 @@ public class MailBox {
     }
 
     private void startIdle() {
-        mIdleHandler.removeMessages(CMD_IDLE);
-        mIdleHandler.sendEmptyMessageDelayed(CMD_IDLE, 0);
+        LogUtil.e(TAG, "startIdle...");
+        if (mMailBoxConf.supportIdle) {
+            mIdleHandler.removeMessages(CMD_IDLE);
+            mIdleHandler.sendEmptyMessageDelayed(CMD_IDLE, 0);
+        } else {
+            mIdleHandler.removeMessages(CMD_NOOP);
+            mIdleHandler.sendEmptyMessageDelayed(CMD_NOOP, NOOP_DURATION_MILL);
+        }
+    }
+
+    private void noop() {
+        Folder folder = mFolder;
+        if (folder == null) {
+            return;
+        }
+        mIdleHandler.removeMessages(CMD_NOOP);
+        mNoopCount++;
+        LogUtil.e(TAG, "noop...:" + mNoopCount);
+        try {
+            ((IMAPFolder) folder).doCommand(new IMAPFolder.ProtocolCommand() {
+                @Override
+                public Object doCommand(IMAPProtocol protocol) throws ProtocolException {
+                    protocol.noop();
+                    return null;
+                }
+            });
+            if (mNoopCount % KEEP_ALIVE_DURATION_COUNT_MAX == 0) {
+                ((IMAPFolder) folder).doCommand(new IMAPFolder.ProtocolCommand() {
+                    @Override
+                    public Object doCommand(IMAPProtocol protocol) throws ProtocolException {
+                        // protocol.id(mClientParams);
+                        protocol.simpleCommand("CAPABILITY", null);
+                        return null;
+                    }
+                });
+            }
+
+            mIdleHandler.sendEmptyMessageDelayed(CMD_NOOP, NOOP_DURATION_MILL);
+        } catch (Exception e) {
+            e.printStackTrace();
+            onError(e);
+        }
     }
 
     private void idle() {
