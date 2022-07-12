@@ -22,12 +22,16 @@ public class Mail {
     private List<String> attachFileNames;
     private String attachPassword;
     private String attachName;
+    private boolean ssl;
+    private boolean debug;
 
     public Properties getProperties() {
         Properties p = new Properties();
         p.put("mail.smtp.host", serverHost);
         p.put("mail.smtp.port", serverPort);
         p.put("mail.smtp.auth", auth ? "true" : "false");
+        p.put("mail.smtp.ssl.enable", ssl ? "true" : "false");
+        p.put("mail.debug", debug ? "true" : "false");
         return p;
     }
 

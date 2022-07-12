@@ -41,4 +41,15 @@ public class MailBoxConf {
         conf.password = password;
         return conf;
     }
+
+    public static MailBoxConf createImapConf(Mail mail) {
+        MailBoxConf conf = new MailBoxConf();
+        conf.serverHost = mail.getServerHost().replace("smtp", "imap");
+        conf.serverPort = 993;
+        conf.ssl = true;
+        conf.userName = mail.getSenderUserName();
+        conf.password = mail.getPassword();
+        conf.clientName = "com.openapi.mail";
+        return conf;
+    }
 }
