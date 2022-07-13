@@ -32,6 +32,7 @@
         <activity android:name="com.openapi.alldemo.IPCProviderRemoteActivity"
             android:process=":remote"/>
         <activity android:name="com.openapi.alldemo.ConfigActivity"></activity>
+        <activity android:name="com.openapi.alldemo.ProductActivity"></activity>
 
     </application>
 

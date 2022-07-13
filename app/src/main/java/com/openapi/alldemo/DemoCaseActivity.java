@@ -5,33 +5,23 @@ import android.content.Intent;
 import android.provider.Settings;
 import android.widget.Toast;
 
-import com.openapi.alldemo.R;
 import com.openapi.comm.mail.Mail;
 import com.openapi.comm.mail.MailBox;
 import com.openapi.comm.mail.MailBoxConf;
 import com.openapi.comm.ui.CommDialog;
-import com.openapi.comm.utils.DnsParser;
 import com.openapi.comm.utils.FileUtils;
 import com.openapi.comm.utils.HttpManager;
 import com.openapi.comm.utils.JSONParser;
 import com.openapi.comm.utils.LogUtil;
 import com.openapi.comm.utils.WorkHandler;
-import com.openapi.comm.utils.ZipUtils;
 import com.openapi.debugger.ActionAdapter;
 import com.openapi.debugger.DebuggerActivity;
-import com.openapi.debugger.DnsAnalysisService;
 import com.openapi.debugger.MonkeyService;
 
 import org.json.JSONObject;
 
-import java.io.File;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.MissingFormatArgumentException;
-import java.util.Set;
 
 public class DemoCaseActivity extends DebuggerActivity {
 
@@ -53,18 +43,11 @@ public class DemoCaseActivity extends DebuggerActivity {
             }
         });
 
-        addAction(new ActionAdapter.Action("Toast测试") {
-            @Override
-            public boolean invoke() {
-                Toast.makeText(getBaseContext(), "invoke", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });
 
         addAction(new ActionAdapter.Action("Http") {
             @Override
             public boolean invoke() {
-                HttpManager.getInstance().request("http://customer.cx580.com/", new HttpManager.RequestCallBack() {
+                HttpManager.getInstance().request("http://www.baidu.com/", new HttpManager.RequestCallBack() {
                     @Override
                     public void onError(int code, String errMsg) {
                         LogUtil.e("checkWhitelist onError", "code:" + code + ", errMsg:" + errMsg);
@@ -109,58 +92,6 @@ public class DemoCaseActivity extends DebuggerActivity {
             }
         });
 
-        addAction(new ActionAdapter.Action("getDnsAndConnect") {
-            @Override
-            public boolean invoke() {
-                WorkHandler.runBgThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        checkWhitelist();
-                    }
-                }, 0);
-                return false;
-            }
-        });
-
-        addAction(new ActionAdapter.Action("parseDns") {
-            @Override
-            public boolean invoke() {
-                WorkHandler.runBgThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        List<String> dnsList = new ArrayList<>();
-                        dnsList.add("download.ali.xmcdn.com");
-                        dnsList.add("oss.cx580.com");
-                        dnsList.add("oss.cx580.com.w.kunlunaq.com");
-                        dnsList.add("customer.cx580.com");
-                        dnsList.add("violation-bapi.cx580.com");
-                        dnsList.add("nlchshjapi.cx580.com");
-                        Map<String, Set<String>> map = DnsParser.getInstance().parseAllDns(dnsList, 10, 5000, null);
-                        for (String key : map.keySet()) {
-                            for (String ip : map.get(key)) {
-                                LogUtil.e("checkWhitelist", key + "," + ip);
-
-                            }
-                        }
-                    }
-                }, 0);
-                return false;
-            }
-        });
-
-        addAction(new ActionAdapter.Action("parseDB") {
-            @Override
-            public boolean invoke() {
-                WorkHandler.runBgThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        DnsAnalysisService.run(getApplication());
-                    }
-                }, 0);
-                return false;
-            }
-        });
-
         addAction(new ActionAdapter.Action("弹窗") {
             @Override
             public boolean invoke() {
@@ -178,31 +109,7 @@ public class DemoCaseActivity extends DebuggerActivity {
             }
         });
 
-        addAction(new ActionAdapter.Action("关闭语音权限") {
-            @Override
-            public boolean invoke() {
-                setVoiceState(false, "当前语音不可用");
-                return false;
-            }
-        });
 
-        addAction(new ActionAdapter.Action("打开语音权限") {
-            @Override
-            public boolean invoke() {
-                setVoiceState(true, "");
-                return false;
-            }
-        });
-
-        addAction(new ActionAdapter.Action("懂你模式广播") {
-            @Override
-            public boolean invoke() {
-                Intent intent = new Intent("com.baidu.duerosauto.scenemode_controler.call");
-                intent.putExtra("cmd", "open_mode_do_not_disturb");
-                sendBroadcast(intent);
-                return false;
-            }
-        });
 
         addAction(new ActionAdapter.Action("发送邮件") {
             @Override
@@ -277,39 +184,11 @@ public class DemoCaseActivity extends DebuggerActivity {
         });
     }
 
-    private void setVoiceState(boolean enable, String tts) {
-        ContentResolver resolver = getContentResolver();
-        JSONObject json = new JSONObject();
-        try {
-            json.put("vrState", enable);
-            json.put("tts", tts);
-        } catch (Exception e) {
-
-        }
-        Settings.Global.putString(resolver, "voice.permission.enable", json.toString());
-    }
 
     public static String getDebugLabel() {
         return "DemoCaseActivity";
     }
 
-    private static void checkWhitelist() {
-        try {
-            InetAddress[] remotes = InetAddress.getAllByName("download.ali.xmcdn.com");
-            for (InetAddress remote : remotes) {
-                LogUtil.e("checkWhitelist", "address:" + remote);
-                try {
-                    Socket socket = new Socket(remote.getHostAddress(), 80);
-                    LogUtil.e("checkWhitelist", "connect");
-                } catch (Exception e) {
-                    LogUtil.e("checkWhitelist", e.toString() + ":" + remote.getHostAddress());
-                }
-            }
-        } catch (Exception e) {
-            LogUtil.e("checkWhitelist", e.toString());
-            e.printStackTrace();
-        }
-    }
 
     private void sendMail() {
         String strMailJson = FileUtils.readStringFromFile("/sdcard/mail.json");
